@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HayWatch</title>
+<meta name="theme-color" content="#0e1c14">
+<script>/* set theme before first paint to avoid a flash */(function(){try{var t=JSON.parse(localStorage.getItem('hw_theme'));if(!t)t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';if(t==='light')document.documentElement.classList.add('light');}catch(e){}})();</script>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HayWatch">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* dark (default) — field green + hay gold */
+    --water:#0e1c14;--card:#16281d;--card2:#1b3125;--line:#274a35;
+    --ink:#eef4ee;--mut:#8fae98;--amber:#e8b23a;--moon:#cdd9df;--good:#4bbf7a;--sky:#79b7d8;
+    --inset:#132419;--card-hi:#1f3a2b;--on-accent:#1a1204;--night:#08150e;--fair:#a9c9b2;
+    --orange:#e08a3c;--danger:#e2603f;
+    --grad-top:#1c3a28;--grad-bot:#081109;
+    --del-bg:#3a1618;--del-line:#773333;--del-ink:#ffb4ae;
+  }
+  :root.light{
+    --water:#e9efe7;--card:#ffffff;--card2:#f2f7f0;--line:#d4e0d1;
+    --ink:#152318;--mut:#5b7361;--amber:#a9720f;--moon:#6b8590;--good:#1f9e5f;--sky:#2f7fb0;
+    --inset:#eef4ec;--card-hi:#e2ede0;--on-accent:#fff8ea;--night:#c6d5c8;--fair:#3d7f57;
+    --orange:#b56a1e;--danger:#bd3d24;
+    --grad-top:#f3f9f1;--grad-bot:#d8e6d6;
+    --del-bg:#fde8e6;--del-line:#e39a94;--del-ink:#a5261b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(120% 80% at 50% -10%, var(--grad-top) 0%, var(--water) 55%, var(--grad-bot) 100%);
+    color:var(--ink);font-family:"Barlow",system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+    min-height:100vh;padding:calc(18px + env(safe-area-inset-top)) 14px calc(44px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:460px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 14px}
+  .brand{font-family:"Fraunces",serif;font-weight:600;font-size:26px;line-height:1}
+  .brand .drop{color:var(--amber)}
+  .hgroup{display:flex;align-items:center;gap:9px}
+  .themeBtn{padding:6px 9px;font-size:15px;line-height:1;border-radius:9px;background:var(--inset);
+    border:1px solid var(--line);flex:0 0 auto}
+  .unitbtn{font-family:"Barlow";font-weight:700;font-size:11px;letter-spacing:.5px;padding:4px 10px;
+    border-radius:999px;background:var(--inset);border:1px solid var(--line);color:var(--amber);cursor:pointer}
+  .tag{font-size:12.5px;color:var(--mut);text-align:right;max-width:150px;line-height:1.25}
+  .panel{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:16px;padding:16px;margin-bottom:12px}
+  h2{font-family:"Barlow";font-weight:600;font-size:12.5px;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--mut);margin:2px 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  h2 .sub{letter-spacing:.3px;text-transform:none;font-weight:500;color:var(--amber);font-size:12.5px}
+
+  .installbar{display:none;align-items:center;gap:10px;background:var(--card-hi);border:1px solid var(--line);
+    border-radius:14px;padding:11px 14px;margin-bottom:12px;font-size:14px}
+  .installbar b{color:var(--amber)}
+  .installbar button{margin-left:auto}
+
+  .selrow{display:flex;gap:10px}
+  .selrow .selcol{flex:1 1 0;min-width:0}
+  .selrow label{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin-bottom:5px}
+  .sel{width:100%;background:var(--inset);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:10px 12px;font-family:"Barlow";font-weight:600;font-size:15px}
+  .prodnote{font-size:12.5px;color:var(--mut);margin-top:10px;line-height:1.4}
+  .prodnote b{color:var(--ink)}
+
+  .bestbar{display:flex;align-items:center;gap:10px;background:var(--card-hi);border:1px solid var(--line);
+    border-radius:12px;padding:11px 13px;margin-bottom:12px;font-size:14px;cursor:pointer}
+  .bestbar .bt{font-weight:700}
+  .bestbar .arrow{margin-left:auto;color:var(--mut);font-size:13px}
+
+  .rating{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+  .rword{font-family:"Barlow Semi Condensed";font-weight:700;font-size:40px;line-height:.92}
+  .rword small{display:block;font-family:"Barlow";font-weight:500;font-size:12px;letter-spacing:1.5px;
+    color:var(--mut);text-transform:uppercase;margin-bottom:5px}
+  .score{font-family:"Barlow Semi Condensed";font-weight:600;font-size:15px;color:var(--mut);text-align:right;white-space:nowrap}
+  .score b{color:var(--ink);font-size:22px}
+  .meter{height:9px;border-radius:6px;background:var(--inset);overflow:hidden;margin:13px 0 11px;border:1px solid var(--line)}
+  .meter i{display:block;height:100%;border-radius:6px;transition:width .5s}
+  .reason{font-size:14.5px;line-height:1.42}
+  .reason .why{color:var(--mut)}
+  .metrrow{display:flex;gap:8px;margin-top:12px}
+  .metr{flex:1 1 0;background:var(--inset);border:1px solid var(--line);border-radius:11px;padding:9px 10px;text-align:center}
+  .metr .k{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut)}
+  .metr .v{font-family:"Barlow Semi Condensed";font-weight:700;font-size:20px;margin-top:2px}
+  .metr .v small{font-size:11px;color:var(--mut);font-weight:600}
+  .conf{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;margin-top:2px}
+  .conf.hi{background:rgba(75,191,122,.15);color:var(--good)}
+  .conf.med{background:rgba(232,178,58,.15);color:var(--amber)}
+  .conf.lo{background:rgba(226,96,63,.15);color:var(--danger)}
+  .herobtns{display:flex;gap:16px;margin-top:12px}
+  .linkbtn{background:none;border:0;padding:0;color:var(--sky);font-weight:600;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .whylist{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .whyrow{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:3px 0}
+  .whyrow .wl{color:var(--ink)}.whyrow .wv{font-family:"Barlow Semi Condensed";font-weight:600;white-space:nowrap}
+  .whyrow .pos{color:var(--good)}.whyrow .neg{color:var(--danger)}
+  .whyrow.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-weight:700}
+
+  .days{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;-webkit-overflow-scrolling:touch}
+  .day{flex:0 0 auto;width:74px;border:1px solid var(--line);border-radius:12px;background:var(--inset);
+    padding:10px 7px;text-align:center;cursor:pointer}
+  .day.on{border-color:var(--amber);background:var(--card-hi)}
+  .day .dow{font-size:12px;color:var(--mut);font-weight:600}
+  .day .num{font-family:"Barlow Semi Condensed";font-weight:700;font-size:21px;margin:3px 0 1px}
+  .day .rw{font-size:10.5px;font-weight:700;letter-spacing:.2px}
+  .day .bw{font-size:10px;color:var(--mut);margin-top:3px}
+
+  .step{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0}
+  .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .dot.cut{background:var(--sky);box-shadow:0 0 0 4px rgba(121,183,216,.14)}
+  .dot.cure{background:var(--amber);box-shadow:0 0 0 4px rgba(232,178,58,.12)}
+  .dot.bale{background:var(--good);box-shadow:0 0 0 4px rgba(75,191,122,.14)}
+  .dot.rain{background:var(--danger);box-shadow:0 0 0 4px rgba(226,96,63,.14)}
+  .step .lab{font-weight:600;font-size:15px;flex:1}
+  .step .lab span{display:block;font-size:12.5px;color:var(--mut);font-weight:400}
+  .step .val{font-family:"Barlow Semi Condensed";font-weight:600;font-size:15px;text-align:right;white-space:nowrap}
+  .step .val span{display:block;font-size:12px;color:var(--mut);font-weight:500}
+
+  .chart svg{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--mut)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .cell{background:var(--card);padding:11px 13px}
+  .cell .k{font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mut)}
+  .cell .v{font-family:"Barlow Semi Condensed";font-weight:600;font-size:19px;margin-top:3px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+  .nw{white-space:nowrap}
+  .cell .v small{font-size:12.5px;color:var(--mut);font-weight:500;font-family:"Barlow"}
+  .trend{font-size:13px;font-weight:600}.up{color:var(--sky)}.down{color:var(--amber)}.flat{color:var(--mut)}
+
+  .logrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+  .logrow:first-child{border-top:0}
+  .logrow .sp{font-weight:600;flex:1}
+  .logrow .meta{font-size:12px;color:var(--mut);text-align:right}
+  .tagpill{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--inset);border:1px solid var(--line);color:var(--mut)}
+  .tagpill.dry{color:var(--good);border-color:rgba(75,191,122,.4)}
+  .tagpill.rain{color:var(--danger);border-color:rgba(226,96,63,.4)}
+  .tagpill.wrap{color:var(--sky);border-color:rgba(121,183,216,.4)}
+  .learn{font-size:13px;color:var(--mut);line-height:1.45;margin-bottom:12px}
+  .learn b{color:var(--ink)}
+  .logctrls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .actions button{width:100%}
+  .actions.leadwide .primary{grid-column:1 / -1}
+  .logrow .sub2{display:block;font-size:11.5px;color:var(--mut);font-weight:400;margin-top:2px}
+  .editor{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .editor.on{display:block}
+  .editor .hint{font-size:12.5px;color:var(--mut);margin-bottom:10px;line-height:1.4}
+  .editor .hint b{color:var(--amber)}
+  .erow{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
+  .efield{flex:1 1 78px;min-width:0}
+  .efield.wide{flex-basis:100%}
+  .efield label{display:block;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+  .efield input,.efield select{width:100%;background:var(--inset);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:8px 10px;font-family:"Barlow";font-size:15px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:var(--inset);color:var(--mut);border-radius:999px;
+    padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .chip.on{background:var(--sky);color:#08191f;border-color:var(--sky)}
+  .chip.on.baled_dry{background:var(--good);border-color:var(--good);color:#08191f}
+  .chip.on.rained_on{background:var(--danger);border-color:var(--danger);color:#fff}
+  .chip.on.baleage{background:var(--amber);border-color:var(--amber);color:var(--on-accent)}
+  .chip.on.regrowth{background:var(--fair);border-color:var(--fair);color:#08191f}
+
+  .pill{flex:0 0 auto;border:1px solid var(--line);background:var(--inset);color:var(--ink);
+    border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .pill.field.on{background:var(--good);color:#08191f;border-color:var(--good)}
+  .pill.del{background:var(--del-bg);border-color:var(--del-line);color:var(--del-ink)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+  .field{flex:1 1 92px;min-width:0}
+  .field.wide{flex-basis:100%}
+  .field label{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+  .field input{width:100%;max-width:100%;background:var(--inset);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:9px 10px;font-family:"Barlow";font-size:15px}
+  button{font-family:"Barlow";font-weight:600;font-size:14px;cursor:pointer;border-radius:9px;border:1px solid var(--line);
+    padding:9px 13px;background:var(--inset);color:var(--ink);flex:0 1 auto}
+  button.primary{background:var(--amber);color:var(--on-accent);border-color:var(--amber)}
+  button:active{transform:translateY(1px)}
+  .spotrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px}
+  .searchwrap{position:relative;margin-bottom:11px}
+  .slabel{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+  .searchinput{width:100%;background:var(--inset);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:10px 12px;font-family:"Barlow";font-size:16px}
+  .results{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--card2);
+    border:1px solid var(--line);border-radius:10px;margin-top:4px;overflow:hidden;display:none;
+    box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .results.on{display:block}
+  .ritem{padding:10px 12px;font-size:14.5px;cursor:pointer;border-top:1px solid var(--line);color:var(--ink)}
+  .ritem:first-child{border-top:0}
+  .ritem:active,.ritem.hi{background:var(--card-hi)}
+  .ritem small{color:var(--mut)}
+  .loc{font-size:12.5px;color:var(--mut);margin-top:9px}
+  .note{font-size:12.5px;color:var(--mut);margin-top:9px;line-height:1.4}
+  textarea{width:100%;height:96px;background:var(--inset);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:9px;font-family:ui-monospace,monospace;font-size:12px;margin-top:8px;display:none}
+  .safety{background:var(--del-bg);border:1px solid var(--del-line);border-radius:12px;padding:12px 14px;
+    font-size:13px;line-height:1.45;color:var(--del-ink);margin-bottom:12px}
+  .safety b{color:var(--del-ink)}
+  .foot{font-size:11.5px;color:var(--mut);line-height:1.45;margin:14px 4px 0}
+  .foot b{color:var(--ink)}
+  .tipwrap{text-align:center;margin:16px 0 2px}
+  .tipbtn{display:inline-block;text-decoration:none;font-weight:700;font-size:14px;
+    color:var(--on-accent);background:var(--amber);border:1px solid var(--amber);
+    border-radius:999px;padding:10px 20px;cursor:pointer}
+  .tipbtn:active{transform:translateY(1px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Hay<span class="drop">·</span>Watch</div>
+    <div class="hgroup">
+      <button id="themeBtn" class="themeBtn" aria-label="Switch light or dark theme" title="Switch light/dark">🌙</button>
+      <div class="tag">Should I cut hay today?</div>
+    </div>
+  </header>
+
+  <div class="installbar" id="installBar">
+    <span><b>Install</b> for one-tap cutting calls</span>
+    <button class="primary" id="installBtn">Add app</button>
+  </div>
+
+  <section class="panel">
+    <h2>What you're making <span class="sub" id="prodSub"></span></h2>
+    <div class="selrow">
+      <div class="selcol"><label>Crop</label><select id="cropSel" class="sel"></select></div>
+      <div class="selcol"><label>Making</label><select id="makingSel" class="sel"></select></div>
+    </div>
+    <div class="prodnote" id="prodNote"></div>
+  </section>
+
+  <div class="bestbar" id="bestBar" style="display:none">
+    <span class="bt" id="bestTxt">—</span>
+    <span class="arrow">tap to view →</span>
+  </div>
+
+  <section class="panel">
+    <div class="rating">
+      <div class="rword"><small id="dayLabel">Today</small><span id="rword">—</span></div>
+      <div class="score">cut score<br><b id="scoreNum">—</b>/100</div>
+    </div>
+    <div class="meter"><i id="meterFill" style="width:0%"></i></div>
+    <div class="reason"><span id="reasonMain">Reading the forecasts…</span> <span class="why" id="reasonWhy"></span></div>
+    <div class="metrrow">
+      <div class="metr"><div class="k">Dry-down</div><div class="v" id="mDry">—</div></div>
+      <div class="metr"><div class="k">Rain in window</div><div class="v" id="mRain">—</div></div>
+      <div class="metr"><div class="k">Model agree</div><div class="v" id="mConf">—</div></div>
+    </div>
+    <div class="herobtns">
+      <button class="linkbtn" id="whyBtn">Why this call?</button>
+      <button class="linkbtn" id="shareBtn">Share</button>
+    </div>
+    <div class="whylist" id="whyList" style="display:none"></div>
+  </section>
+
+  <section class="panel">
+    <h2>14-day cut outlook</h2>
+    <div class="days" id="days"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Your plan for this cut <span class="sub" id="planSub"></span></h2>
+    <div id="planList"></div>
+    <div class="note" id="planNote"></div>
+  </section>
+
+  <section class="panel chart">
+    <h2>Drying power &amp; rain risk</h2>
+    <div id="chart"></div>
+    <div class="legend">
+      <span><i style="background:var(--good)"></i>Drying power (ET₀)</span>
+      <span><i style="background:var(--danger)"></i>Rain</span>
+      <span><i style="background:var(--sky)"></i>Selected cut</span>
+      <span id="legModels"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Conditions today <button class="unitbtn" id="unitBtn" aria-label="Toggle units">US</button></h2>
+    <div class="grid">
+      <div class="cell"><div class="k">Air temp</div><div class="v" id="cAir">—</div></div>
+      <div class="cell"><div class="k">Humidity</div><div class="v" id="cRH">—</div></div>
+      <div class="cell"><div class="k">Dew point</div><div class="v" id="cDew">—</div></div>
+      <div class="cell"><div class="k">Wind</div><div class="v" id="cWind">—</div></div>
+      <div class="cell"><div class="k">Drying power</div><div class="v" id="cEt0">—</div></div>
+      <div class="cell"><div class="k">Rain today</div><div class="v" id="cRain">—</div></div>
+    </div>
+    <div class="note" id="wxNote"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Cutting log <span class="sub" id="logCount"></span></h2>
+    <div class="learn" id="learn">No cuts logged yet.</div>
+    <div id="logList"></div>
+    <div class="actions leadwide">
+      <button class="primary" id="logAdd">Log a cut now</button>
+      <button id="logExport">Export</button>
+      <button id="logImport">Import</button>
+      <button id="logClear">Clear</button>
+    </div>
+
+    <div class="editor" id="editor">
+      <div class="hint">Logged a cut on <b id="edWhen">today</b>. Add detail any time — all optional. Come back and set the <b>outcome</b> once it's baled; that's what teaches the model your fields.</div>
+      <div class="erow">
+        <div class="efield wide"><label>How it turned out</label>
+          <div class="chips" id="edOutcome">
+            <span class="chip baled_dry" data-v="baled_dry">Baled dry</span>
+            <span class="chip rained_on" data-v="rained_on">Rained on</span>
+            <span class="chip baleage" data-v="baleage">Made baleage</span>
+            <span class="chip regrowth" data-v="regrowth">Left it / regrowth</span>
+          </div>
+        </div>
+      </div>
+      <div class="erow">
+        <div class="efield"><label>Actual dry days</label><input id="edDryDays" inputmode="decimal" placeholder="—"></div>
+        <div class="efield"><label>Moisture at bale %</label><input id="edMoist" inputmode="decimal" placeholder="—"></div>
+      </div>
+      <div class="erow">
+        <div class="efield wide"><label>Note</label><input id="edNote" placeholder="anything worth remembering"></div>
+      </div>
+      <div class="logctrls" style="margin-top:2px">
+        <button id="edDelete" style="color:var(--del-ink);border-color:var(--del-line)">Delete</button>
+        <button class="primary" id="edSave" style="margin-left:auto">Save detail</button>
+      </div>
+    </div>
+
+    <textarea id="logIO" placeholder="Cutting-log JSON"></textarea>
+    <div class="note" id="storeNote"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Fields</h2>
+    <div class="spotrow" id="spotRow"></div>
+    <div class="searchwrap">
+      <label class="slabel">Search location</label>
+      <input id="placeSearch" class="searchinput" placeholder="Town, city, or place…" autocomplete="off">
+      <div class="results" id="placeResults"></div>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>Latitude</label><input id="lat" inputmode="decimal" value="44.67"></div>
+      <div class="field"><label>Longitude</label><input id="lon" inputmode="decimal" value="-75.00"></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button class="primary" id="useLoc">Use my location</button>
+      <button id="saveSpot">Save field</button>
+      <button id="editSpots">Edit fields</button>
+      <button id="run">Update</button>
+    </div>
+    <div class="loc" id="locNote">Locating…</div>
+  </section>
+
+  <div class="tipwrap" id="tipWrap" style="display:none">
+    <a class="tipbtn" id="tipBtn" target="_blank" rel="noopener">☕ Support HayWatch</a>
+  </div>
+
+  <div class="safety">
+    <b>⚠ Safety:</b> Never bale or stack hay above safe moisture. Wet hay heats in storage and can spoil,
+    mold, or spontaneously combust — a real barn-fire risk. Always confirm bale moisture with a probe
+    before storing. HayWatch does not measure your hay; it only reads the weather forecast.
+  </div>
+
+  <div class="foot">
+    HayWatch scores each candidate cutting day by the drying window that follows it — combining reference
+    evapotranspiration (drying power), humidity and overnight dew, and rain risk cross-checked across
+    several global weather models. Model agreement is your confidence; disagreement means wait.
+    <b>This is a planning aid, not a guarantee.</b> Forecasts are wrong sometimes, and only you can judge
+    your fields, equipment, and hay. <b>Woods Market LLC / HayWatch is not responsible for any crop loss,
+    spoilage, equipment, property, or other damages arising from decisions made with this app.</b> Use
+    your own judgment — the weather gets the final say.
+  </div>
+</div>
+
+<script>
+/* ================= config ================= */
+const TIP_URL=''; // tip-jar link (Ko-fi / Buy Me a Coffee / Stripe). Empty string = button stays hidden.
+
+// Global forecast models cross-checked for rain agreement. All free & keyless via Open-Meteo.
+// ECMWF is short-range (~7d) so far-out days naturally show fewer models = lower confidence.
+const MODELS=[
+  {id:'ecmwf_ifs04',    name:'ECMWF'},
+  {id:'gfs_seamless',   name:'GFS'},
+  {id:'icon_seamless',  name:'ICON'},
+  {id:'gem_seamless',   name:'GEM'},
+  {id:'meteofrance_seamless', name:'Météo-France'},
+];
+
+/* ================= crop / product presets =================
+   The "species" analog. All numbers are INFORMED GUESSES, not validated — the cutting log is the
+   calibration path (log outcomes → nudge dry-down over time). Two dimensions:
+     crop   → dryFactor: legumes/thick stems hold water and dry slower (need more drying power).
+     making → needMm (cumulative reference-ET drying power to reach target moisture), target
+              moisture band, maxDays (ideal window length), rainTol (how forgiving of rain in-window;
+              higher = more tolerant), dewSens (how much overnight dew stretches the cure). */
+const CROPS={
+  grass:  {name:'Grass hay',            dryFactor:1.00},
+  mixed:  {name:'Mixed grass-legume',   dryFactor:1.10},
+  alfalfa:{name:'Alfalfa',              dryFactor:1.22},
+  clover: {name:'Clover',               dryFactor:1.25},
+  orchard:{name:'Orchardgrass / timothy',dryFactor:1.05},
+};
+const MAKING={
+  dry_square:{name:'Dry hay — small squares', short:'small squares', target:'16–18%', needMm:12, maxDays:5, rainTol:0.18, dewSens:1.00, wet:false},
+  dry_round: {name:'Dry hay — round bales',   short:'round bales',   target:'~18%',   needMm:10, maxDays:5, rainTol:0.32, dewSens:1.00, wet:false},
+  dry_large: {name:'Dry hay — large squares', short:'large squares', target:'≤14%',   needMm:14, maxDays:6, rainTol:0.12, dewSens:1.10, wet:false},
+  baleage:   {name:'Baleage — wrapped',       short:'wrapped baleage',target:'45–55%', needMm:4,  maxDays:2, rainTol:0.70, dewSens:0.45, wet:true},
+};
+
+/* ================= storage ================= */
+const Store=(function(){
+  let ok=false,mem={};
+  try{localStorage.setItem('__hw','1');localStorage.removeItem('__hw');ok=true;}catch(e){ok=false;}
+  return {persistent:ok,
+    get(k){try{return ok?localStorage.getItem(k):mem[k];}catch(e){return mem[k];}},
+    set(k,v){try{ok?localStorage.setItem(k,v):(mem[k]=v);}catch(e){mem[k]=v;}}};
+})();
+const jget=(k,d)=>{try{return JSON.parse(Store.get(k)||JSON.stringify(d));}catch(e){return d;}};
+const jset=(k,v)=>Store.set(k,JSON.stringify(v));
+
+/* ================= state ================= */
+let SEL={lat:44.67,lon:-75.00,dayIdx:0};      // dayIdx = selected candidate cut day (0 = today, 0..13)
+let SPOTS=jget('hw_fields',[]);
+let UNITS=jget('hw_units','US');               // 'US' (°F, mph, in) | 'metric' (°C, km/h, mm)
+let CROP=jget('hw_crop','grass'), PRODUCT=jget('hw_making','dry_square');
+if(!CROPS[CROP])CROP='grass'; if(!MAKING[PRODUCT])PRODUCT='dry_square';
+
+let HOURLY=null;      // {time,temp,rh,dew,precip,precipProb,cloud,wind,vpd} parallel arrays
+let DAILY=null;       // {date,et0,rainSum,rainProbMax,tmax,tmin,sunrise,sunset}
+let MODELDAY=null;    // per-day per-model daily precip (mm): MODELDAY[i] = {avail:[ids], rainCount, rainFrac}
+let DAYS=[];          // built aggregates per day index (14)
+let COUNTY=null,USTATE=null;
+
+const mm2in=mm=>mm/25.4;
+const tempStr=f=>f==null?'—':(UNITS==='metric'?Math.round((f-32)*5/9)+'°C':Math.round(f)+'°F');
+const windStr=mph=>mph==null?'—':(UNITS==='metric'?Math.round(mph*1.60934)+' km/h':Math.round(mph)+' mph');
+const rainStr=mm=>mm==null?'—':(UNITS==='metric'?(mm<0.05?'0':mm.toFixed(mm<10?1:0))+' mm':(mm2in(mm)<0.005?'0':mm2in(mm).toFixed(2))+'"');
+const rainUnit=()=>UNITS==='metric'?'mm':'in';
+const valOf=s=>s.replace(/ ?(mm|in|")$/,'');   // strip the unit suffix, keep just the number
+const compass=deg=>deg==null?'':['N','NE','E','SE','S','SW','W','NW'][Math.round(((deg%360)/45))%8];
+
+/* ================= cutting log ================= */
+// v1 schema (see CLAUDE.md). Logging stays one tap; every field after the snapshot is optional.
+function uid(){return 'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function normalizeLog(arr){
+  let changed=false;
+  const out=(arr||[]).map(e=>{
+    if(e&&e.v>=1&&e.id)return e;
+    changed=true;
+    return {id:e.id||uid(), v:1, ts:e.ts||Date.now(),
+      lat:e.lat??null, lon:e.lon??null, field:e.field??null,
+      crop:e.crop||'grass', product:e.product||'dry_square', cutDate:e.cutDate||e.ts||Date.now(),
+      ctx:e.ctx||{et0Window:null,rainWindow:null,rainProbMax:null,minOvernightRH:null,score:null,predictedDryDays:null},
+      outcome:e.outcome??null, moistureAtBale:e.moistureAtBale??null, actualDryDays:e.actualDryDays??null, note:e.note??null};
+  });
+  if(changed)jset('hw_log',out);
+  return out;
+}
+let LOG=normalizeLog(jget('hw_log',[]));
+
+// Light learning: once ≥3 logged cuts carry an actualDryDays, nudge the drying requirement toward what
+// your fields really do (bounded). Honest-limits framing preserved — small effect, calibration only.
+function computeLearn(log){
+  const rec=(log||[]).filter(e=>e.actualDryDays!=null && e.ctx && e.ctx.predictedDryDays!=null);
+  if(rec.length<3)return {bias:0,n:rec.length};
+  const diffs=rec.map(e=>e.actualDryDays-e.ctx.predictedDryDays);
+  const mean=diffs.reduce((s,d)=>s+d,0)/diffs.length;
+  return {bias:Math.max(-1.5,Math.min(1.5,mean)),n:rec.length};   // days the model tends to be off by
+}
+let LEARN=computeLearn(LOG);
+// Calibration readout: how logged cuts actually turned out, bucketed by the score at cut time.
+function calibration(log){
+  const band=s=>s>=72?'Prime':s>=52?'Good':s>=34?'Marginal':'Don’t cut';
+  const map={};
+  (log||[]).forEach(e=>{
+    if(!e.outcome||!e.ctx||e.ctx.score==null)return;
+    const b=band(e.ctx.score),m=map[b]||(map[b]={good:0,n:0});
+    m.n++; if(e.outcome==='baled_dry'||e.outcome==='baleage')m.good++;
+  });
+  return ['Prime','Good','Marginal','Don’t cut'].filter(b=>map[b]).map(b=>({band:b,good:map[b].good,n:map[b].n}));
+}
+
+/* ================= dry-down scoring model ================= */
+// Overnight re-wetting multiplier: high overnight RH & dew near air temp slow the swath's dry-down.
+function dewMult(d){
+  if(d.rhNight==null)return 1;
+  const sens=MAKING[PRODUCT].dewSens;
+  // Nightly dew to ~90% RH is routine and burns off by mid-morning — don't punish it. Only genuinely
+  // saturated overnights (RH >92%, i.e. the dew lingers) meaningfully slow the swath, and gently.
+  const f=1-Math.max(0,(d.rhNight-92)/8)*0.30*sens;   // 92%→1.0, 100%→~0.76
+  return Math.max(0.55,Math.min(1,f));
+}
+// Effective drying power for a day (mm of reference ET), discounted for overnight dew.
+function effEt0(d){ return d.et0!=null?d.et0*dewMult(d):0; }
+
+// Predict dry-down days from cut day D. Cut afternoon counts as a half drying day.
+function predictDryDays(D){
+  const need=CROPS[CROP].dryFactor*MAKING[PRODUCT].needMm;
+  let acc=0,days=0;
+  for(let i=D;i<DAYS.length;i++){
+    const w=(i===D)?0.5:1;                       // cut-day: afternoon only
+    acc+=effEt0(DAYS[i])*w; days+=w;
+    if(acc>=need)return {days:Math.max(1,Math.round(days*2)/2),acc,need,enough:true};
+  }
+  return {days:Infinity,acc,need,enough:false};   // horizon ran out before curing
+}
+
+// Full score for cutting on day D. Rain is the dominant penalty and escalates as the hay dries.
+function scoreCut(D){
+  const mk=MAKING[PRODUCT], pd=predictDryDays(D);
+  let pdd=pd.enough?pd.days:MAKING[PRODUCT].maxDays+3;
+  if(LEARN.bias)pdd=Math.max(1,pdd+LEARN.bias);   // nudge by what your fields actually do
+  const parts=[];
+
+  // --- drying power base: surplus/deficit of ET0 available over the ideal window vs what's needed ---
+  let accMax=0; for(let i=D;i<Math.min(DAYS.length,D+mk.maxDays+1);i++)accMax+=effEt0(DAYS[i])*(i===D?0.5:1);
+  const surplus=Math.max(-1,Math.min(0.8,(accMax-pd.need)/pd.need));
+  const base=60+42*surplus;
+  parts.push({label:'Drying power',v:base-60});
+
+  // --- rain penalty over the curing window; later (drier) rain leaches quality worse ---
+  const winEnd=Math.min(DAYS.length-1, D+Math.ceil(pd.enough?pd.days:mk.maxDays));
+  let rainPen=0,hardRain=false,rainWindow=0,rainProbMax=0,worstRain=null;
+  for(let j=D;j<=winEnd;j++){
+    const dd=DAYS[j]; if(!dd)continue;
+    const span=Math.max(1,winEnd-D);
+    const pos=(j-D)/span;                          // 0 at cut → 1 near bale
+    const qw=0.6+0.9*pos;                          // quality weight: rain on drier hay hurts more
+    const amt=dd.rain||0, prob=(dd.rainProb!=null?dd.rainProb:0)/100;
+    const agree=dd.rainFrac!=null?dd.rainFrac:prob; // model consensus on rain, else fall back to prob
+    const conf=0.5+0.5*agree;                       // discount penalty when models disagree
+    rainWindow+=amt; rainProbMax=Math.max(rainProbMax,dd.rainProb||0);
+    if(amt>0.3||prob>0.35){
+      const pen=((amt*2.4)+(prob*6)) * conf * qw / mk.rainTol;
+      rainPen+=pen;
+      if((amt>=7&&agree>=0.4)||(amt>=12))hardRain=true;
+      if(!worstRain||amt>worstRain.amt)worstRain={idx:j,amt,prob:dd.rainProb,agree:dd.rainFrac,models:dd.rainCount};
+    }
+  }
+  parts.push({label:'Rain in window',v:-rainPen});
+
+  // --- overnight dew penalty (separate small hit; also already stretched pdd) ---
+  let dewPen=0,heavyDew=false;
+  for(let j=D;j<=winEnd;j++){const dd=DAYS[j];if(dd&&dd.rhNight!=null&&dd.rhNight>=97){dewPen+=2;heavyDew=true;}}
+  dewPen=Math.min(10,dewPen);
+  if(dewPen)parts.push({label:'Heavy overnight dew',v:-dewPen});
+
+  // --- short-window / not-enough-drying-power risk ---
+  let longPen=0,tooLong=false;
+  if(!pd.enough){longPen=30;tooLong=true;parts.push({label:'Not enough drying power',v:-longPen});}
+  else if(pdd>mk.maxDays){longPen=(pdd-mk.maxDays)*7;parts.push({label:'Slow cure',v:-longPen});}
+
+  let score=base-rainPen-dewPen-longPen;
+  if(hardRain)score=Math.min(score,18);
+  if(tooLong)score=Math.min(score,26);
+  score=Math.max(0,Math.min(100,score));
+
+  // --- forecast confidence from model agreement across the window ---
+  let unan=0,uc=0,modelsSeen=0;
+  for(let j=D;j<=winEnd;j++){const dd=DAYS[j];if(dd&&dd.rainCount!=null){const fr=dd.rainFrac;unan+=Math.abs(fr-0.5)*2;uc++;modelsSeen=Math.max(modelsSeen,dd.rainCount);}}
+  const agreeScore=uc?unan/uc:0, horizonDecay=Math.max(0,1-D/12);
+  const confVal=agreeScore*0.7+horizonDecay*0.3;
+  const confidence=confVal>=0.62?'High':confVal>=0.4?'Medium':'Low';
+
+  return {D,score,tier:tierOf(score),pdd,pddEnough:pd.enough,base,rainPen,rainWindow,rainProbMax,
+    dewPen,hardRain,heavyDew,tooLong,worstRain,parts,winEnd,confidence,confVal,modelsSeen,need:pd.need,accMax};
+}
+function tierOf(s){
+  if(s>=72)return {word:'Prime cut',color:'var(--good)'};
+  if(s>=52)return {word:'Good',color:'var(--amber)'};
+  if(s>=34)return {word:'Marginal',color:'var(--orange)'};
+  return {word:'Don’t cut',color:'var(--danger)'};
+}
+function bestCutDay(){
+  let best=null;
+  for(let i=0;i<DAYS.length;i++){const r=scoreCut(i);if(!best||r.score>best.score+0.5)best=r;}
+  return best;
+}
+function dayName(i){
+  const d=new Date();d.setDate(d.getDate()+i);
+  if(i===0)return 'Today'; if(i===1)return 'Tomorrow';
+  return d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+}
+function dayShort(i){
+  const d=new Date();d.setDate(d.getDate()+i);
+  return i===0?'today':d.toLocaleDateString(undefined,{weekday:'short'});
+}
+
+/* ================= risk line (plain language) ================= */
+function riskLine(r){
+  const mk=MAKING[PRODUCT];
+  if(r.hardRain&&r.worstRain){
+    const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
+    return `Heavy rain ${dayShort(w.idx)}${m} — you'd be baling into it. Wait.`;
+  }
+  if(r.tooLong){
+    return `Not enough drying power in the next ${DAYS.length} days for ${mk.short}. Consider baleage or wait.`;
+  }
+  if(r.rainPen>22&&r.worstRain){
+    const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
+    return `Rain risk ${dayShort(w.idx)}${m} mid-cure — tight, watch it closely.`;
+  }
+  if(r.heavyDew){
+    return `Clear days but heavy overnight dew — the swath re-wets, add drying time.`;
+  }
+  if(r.pddEnough){
+    const bale=Math.min(DAYS.length-1,r.D+Math.ceil(r.pdd));
+    if(r.score>=72)return `Open drying stretch — cut ${dayShort(r.D)}, bale around ${dayShort(bale)}. Good to go.`;
+    return `Workable window — cut ${dayShort(r.D)}, aim to bale by ${dayShort(bale)}.`;
+  }
+  return `Marginal drying — no margin if the forecast slips.`;
+}
+function dewText(dd){
+  if(dd.dewLingers)return 'dew lingers all day';
+  if(dd.dewOff==null)return 'dew n/a';
+  return 'dew off ~'+fmtClock(dd.dewOff)+(dd.dewSet!=null?', sets ~'+fmtClock(dd.dewSet):'');
+}
+function modelPhrase(w){
+  if(w.agree==null||w.models==null)return '';
+  const wet=Math.round(w.agree*w.models);
+  return `${wet} of ${w.models} models`;
+}
+
+/* ================= formatting ================= */
+function fmtClock(mins){if(mins==null||isNaN(mins))return '—';mins=((mins%1440)+1440)%1440;
+  let h=Math.floor(mins/60),m=Math.round(mins%60);if(m===60){m=0;h++;}
+  const ap=h<12?'AM':'PM';let hh=h%12;if(hh===0)hh=12;return hh+':'+String(m).padStart(2,'0')+' '+ap;}
+function haversine(a,b,c,d){const R=3959,p=Math.PI/180;
+  const x=Math.sin((c-a)*p/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin((d-b)*p/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));}
+function nearestSpot(lat,lon){let best=null,bd=2.0;
+  (SPOTS||[]).forEach(s=>{const d=haversine(lat,lon,s.lat,s.lon);if(d<bd){bd=d;best=s;}});
+  return best?best.name:null;}
+
+/* ================= render ================= */
+let SPOTEDIT=false, WHYOPEN=false, EDIT_ID=null;
+function renderProduct(){
+  const cs=document.getElementById('cropSel');cs.innerHTML='';
+  Object.keys(CROPS).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=CROPS[k].name;if(k===CROP)o.selected=true;cs.appendChild(o);});
+  cs.onchange=()=>{CROP=cs.value;jset('hw_crop',CROP);renderAll();};
+  const ms=document.getElementById('makingSel');ms.innerHTML='';
+  Object.keys(MAKING).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=MAKING[k].name;if(k===PRODUCT)o.selected=true;ms.appendChild(o);});
+  ms.onchange=()=>{PRODUCT=ms.value;jset('hw_making',PRODUCT);SEL.dayIdx=Math.min(SEL.dayIdx,DAYS.length-1);renderAll();};
+  const mk=MAKING[PRODUCT];
+  document.getElementById('prodSub').textContent=mk.wet?'forgiving — wilt & wrap':'needs a clear stretch';
+  document.getElementById('prodNote').innerHTML=
+    `Target moisture <b>${mk.target}</b> · ideal window <b>~${mk.maxDays} day${mk.maxDays===1?'':'s'}</b>.`+
+    (mk.wet?` Baleage wilts one day then gets wrapped wet — far more rain-tolerant than dry hay.`
+           :` Dry hay needs the full clear stretch; ${CROPS[CROP].name.toLowerCase()} dries ${CROPS[CROP].dryFactor>1.1?'slowly':'at a normal pace'}.`);
+}
+function renderBest(){
+  const bar=document.getElementById('bestBar');
+  if(!DAYS.length){bar.style.display='none';return;}
+  const b=bestCutDay();if(!b){bar.style.display='none';return;}
+  bar.style.display='flex';
+  const t=b.tier;
+  document.getElementById('bestTxt').innerHTML=
+    (b.tier.word==='Don’t cut')
+      ? `<span style="color:${t.color}">No good cut day in the next ${DAYS.length}.</span>`
+      : `Best cut: <b style="color:${t.color}">${dayName(b.D)}</b> — ${t.word} (${Math.round(b.score)})`;
+  bar.onclick=()=>{SEL.dayIdx=b.D;renderAll();document.getElementById('bestBar').scrollIntoView({behavior:'smooth',block:'start'});};
+}
+function renderHero(){
+  const el=id=>document.getElementById(id);
+  if(!DAYS.length){el('reasonMain').textContent='Loading forecasts…';return;}
+  const r=scoreCut(SEL.dayIdx),t=r.tier;
+  el('rword').textContent=t.word;el('rword').style.color=t.color;
+  el('scoreNum').textContent=Math.round(r.score);
+  el('meterFill').style.width=r.score+'%';
+  el('meterFill').style.background=`linear-gradient(90deg,var(--card-hi),${t.color})`;
+  el('dayLabel').textContent=SEL.dayIdx===0?'Cut today?':'Cut '+dayName(SEL.dayIdx).toLowerCase()+'?';
+  el('reasonMain').textContent=riskLine(r);el('reasonWhy').textContent='';
+  el('mDry').innerHTML=r.pddEnough?`${r.pdd}<small> days</small>`:`—`;
+  el('mRain').innerHTML=`${valOf(rainStr(r.rainWindow))}<small> ${rainUnit()}</small>`;
+  const cc=r.confidence==='High'?'hi':r.confidence==='Medium'?'med':'lo';
+  el('mConf').innerHTML=`<span class="conf ${cc}">${r.confidence}</span>`;
+  // why breakdown
+  const wl=el('whyList');
+  const fmtV=v=>(v>=0?'+':'−')+Math.abs(Math.round(v));
+  wl.innerHTML=r.parts.filter(p=>Math.abs(p.v)>=0.5).map(p=>`<div class="whyrow"><span class="wl">${p.label}</span><span class="wv ${p.v>=0?'pos':'neg'}">${fmtV(p.v)}</span></div>`).join('')
+    +`<div class="whyrow"><span class="wl">Base</span><span class="wv">+60</span></div>`
+    +`<div class="whyrow tot"><span class="wl">Cut score (0–100)</span><span class="wv">${Math.round(r.score)}</span></div>`
+    +`<div class="loc" style="margin-top:6px">Rain risk is cross-checked across ${r.modelsSeen||MODELS.length} weather models. Weights are informed guesses; your cutting log calibrates them.</div>`;
+  wl.style.display=WHYOPEN?'block':'none';
+  el('whyBtn').textContent=WHYOPEN?'Hide breakdown':'Why this call?';
+}
+function renderDays(){
+  const el=document.getElementById('days');el.innerHTML='';
+  for(let i=0;i<DAYS.length;i++){
+    const r=scoreCut(i),t=r.tier,on=i===SEL.dayIdx;
+    const c=document.createElement('div');c.className='day'+(on?' on':'');
+    c.innerHTML=`<div class="dow">${i===0?'Today':dayShort(i)}</div>
+      <div class="num">${Math.round(r.score)}</div><div class="rw" style="color:${t.color}">${t.word}</div>
+      <div class="bw">${r.pddEnough?r.pdd+'d dry':'—'}</div>`;
+    c.onclick=()=>{SEL.dayIdx=i;renderAll();};
+    el.appendChild(c);
+  }
+}
+function renderPlan(){
+  const list=document.getElementById('planList'),note=document.getElementById('planNote');
+  document.getElementById('planSub').textContent=dayName(SEL.dayIdx);
+  list.innerHTML='';
+  if(!DAYS.length){note.textContent='';return;}
+  const r=scoreCut(SEL.dayIdx);
+  const end=r.pddEnough?Math.min(DAYS.length-1,SEL.dayIdx+Math.ceil(r.pdd)):Math.min(DAYS.length-1,SEL.dayIdx+MAKING[PRODUCT].maxDays);
+  for(let j=SEL.dayIdx;j<=end;j++){
+    const dd=DAYS[j];if(!dd)continue;
+    const isCut=j===SEL.dayIdx, isBale=j===end;
+    const rain=dd.rain||0, wetDay=rain>0.3||(dd.rainProb||0)>40;
+    let cls='cure',role='Dry / cure',subs=[];
+    if(isCut){cls='cut';role='Cut & ted';}
+    if(isBale&&!wetDay){cls='bale';role='Bale';}
+    if(wetDay){cls='rain';role=isCut?'Cut (rain risk)':'Rain risk';}
+    subs.push('ET₀ '+valOf(rainStr(dd.et0))+' '+rainUnit());
+    subs.push(dewText(dd));
+    const rp=dd.rainProb!=null?dd.rainProb:null;
+    const rainTxt=rain>0.05?rainStr(rain):(rp?rp+'%':'dry');
+    const modTxt=(dd.rainCount&&dd.rainFrac>0)?`${Math.round(dd.rainFrac*dd.rainCount)}/${dd.rainCount} wet`:'';
+    const row=document.createElement('div');row.className='step';
+    row.innerHTML=`<span class="dot ${cls}"></span>
+      <div class="lab">${dayName(j)}<span>${role} · ${subs.join(' · ')}</span></div>
+      <div class="val">${rainTxt}<span>${rp!=null&&rain>0.05?rp+'% · ':''}${modTxt||'rain'}</span></div>`;
+    list.appendChild(row);
+  }
+  note.textContent=r.pddEnough
+    ? `Predicted dry-down: ~${r.pdd} days for ${MAKING[PRODUCT].short}. Cut → ted to speed drying → rake → bale when moisture is in range.`
+    : `The next ${DAYS.length} days don't offer enough drying power to reach ${MAKING[PRODUCT].target} for ${MAKING[PRODUCT].short}.`;
+}
+function renderChart(){
+  const el=document.getElementById('chart');
+  document.getElementById('legModels').innerHTML=MODELDAY?`<i style="background:var(--mut)"></i>${(bestCutDay()||{}).modelsSeen||MODELS.length} models`:'';
+  if(!DAYS.length){el.innerHTML='';return;}
+  const n=DAYS.length,W=360,H=170,padL=8,padR=8,top=10,base=138;
+  const cw=(W-padL-padR)/n, xf=i=>padL+i*cw;
+  const maxEt=Math.max(4,...DAYS.map(d=>d.et0||0));
+  const maxRain=Math.max(6,...DAYS.map(d=>d.rain||0));
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily drying power and rain risk"><defs>
+    <linearGradient id="dry" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6cd79a"/><stop offset="1" stop-color="#2f8a58"/></linearGradient></defs>`;
+  // selected-cut highlight
+  svg+=`<rect x="${xf(SEL.dayIdx)}" y="${top-4}" width="${cw}" height="${base-top+4}" fill="rgba(121,183,216,.14)" rx="3"/>`;
+  svg+=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="var(--line)"/>`;
+  DAYS.forEach((d,i)=>{
+    // drying-power bar (green)
+    const eh=((d.et0||0)/maxEt)*(base-top);const bw=cw*0.52,bx=xf(i)+cw*0.10;
+    svg+=`<rect x="${bx}" y="${base-eh}" width="${bw}" height="${eh}" rx="1.5" fill="url(#dry)" opacity="${.55+.45*(d.et0||0)/maxEt}"/>`;
+    // rain bar (red, overlaid to the right)
+    const rh=((d.rain||0)/maxRain)*(base-top);const rw=cw*0.30,rx=xf(i)+cw*0.60;
+    if((d.rain||0)>0.05)svg+=`<rect x="${rx}" y="${base-rh}" width="${rw}" height="${Math.max(2,rh)}" rx="1.5" fill="var(--danger)" opacity=".9"/>`;
+    // model-agreement dot under wet days
+    if(d.rainCount&&d.rainFrac>0.05){const dotY=base+9;const wet=d.rainFrac;
+      svg+=`<circle cx="${xf(i)+cw/2}" cy="${dotY}" r="2.6" fill="var(--danger)" opacity="${.35+.65*wet}"/>`;}
+  });
+  // x labels every other day
+  DAYS.forEach((d,i)=>{if(i%2===0)svg+=`<text x="${xf(i)+cw/2}" y="${H-4}" fill="var(--mut)" font-size="9" font-family="Barlow" text-anchor="middle">${i===0?'now':dayShort(i)}</text>`;});
+  el.innerHTML=svg+`</svg>`;
+}
+function renderConditions(){
+  const el=id=>document.getElementById(id);
+  if(!DAYS.length||!HOURLY){el('wxNote').textContent='Live weather did not load yet.';return;}
+  // "now" hour index into HOURLY
+  const now=new Date();const key=dstr(now)+'T'+String(now.getHours()).padStart(2,'0');
+  let hi=HOURLY.time.findIndex(t=>t.slice(0,13)===key);if(hi<0)hi=0;
+  el('cAir').innerHTML=tempStr(HOURLY.temp[hi]);
+  el('cRH').innerHTML=HOURLY.rh[hi]!=null?Math.round(HOURLY.rh[hi])+'<small>%</small>':'—';
+  el('cDew').innerHTML=tempStr(HOURLY.dew[hi]);
+  const wd=HOURLY.windDir?compass(HOURLY.windDir[hi]):'';
+  el('cWind').innerHTML=HOURLY.wind[hi]!=null?windStr(HOURLY.wind[hi]).split(' ')[0]+' <small>'+windStr(HOURLY.wind[hi]).split(' ').slice(1).join(' ')+(wd?' · '+wd:'')+'</small>':'—';
+  const d0=DAYS[0];
+  const et=d0.et0||0, lab=et>=5?'Strong':et>=3?'Fair':'Weak';
+  el('cEt0').innerHTML=`${valOf(rainStr(et))}<small> ${rainUnit()} · ${lab}</small>`;
+  el('cRain').innerHTML=`${valOf(rainStr(d0.rain||0))}<small> ${rainUnit()}${d0.rainProb!=null?' · '+d0.rainProb+'%':''}</small>`;
+  const dw=d0.dewLingers?'<b style="color:var(--danger)">Dew likely lingers all day</b> — the swath won\'t work well.'
+    :(d0.dewOff!=null?`<b>Dew off ~${fmtClock(d0.dewOff)}</b>${d0.dewSet!=null?` · sets back in ~${fmtClock(d0.dewSet)}`:''} — that's today's workable window for cutting, raking &amp; baling.`:'');
+  el('wxNote').innerHTML=(dw?dw+'<br>':'')+'Reference ET₀ is the composite drying power (sun, heat, wind, dryness in one number). Rain risk is cross-checked across '+MODELS.length+' global models.';
+  el('unitBtn').textContent=UNITS==='metric'?'Metric':'US';
+}
+function renderSpots(){
+  const el=document.getElementById('spotRow');el.innerHTML='';
+  const editBtn=document.getElementById('editSpots');
+  if(!SPOTS.length){SPOTEDIT=false;if(editBtn)editBtn.textContent='Edit fields';
+    el.innerHTML='<span class="loc" style="margin:0">No saved fields yet. Tap “Save field” to pin this spot.</span>';return;}
+  if(editBtn)editBtn.textContent=SPOTEDIT?'Done':'Edit fields';
+  SPOTS.forEach((s,i)=>{
+    const on=Math.abs(s.lat-SEL.lat)<0.01&&Math.abs(s.lon-SEL.lon)<0.01;
+    const b=document.createElement('div');b.className='pill field'+(SPOTEDIT?' del':(on?' on':''));
+    b.textContent=SPOTEDIT?(s.name+' ✕'):s.name;
+    if(SPOTEDIT){b.onclick=()=>{if(confirm('Remove field "'+s.name+'"?')){SPOTS.splice(i,1);jset('hw_fields',SPOTS);if(!SPOTS.length)SPOTEDIT=false;renderSpots();}};}
+    else{b.onclick=()=>{SEL.lat=s.lat;SEL.lon=s.lon;setCoords(s.lat,s.lon);update();};}
+    el.appendChild(b);
+  });
+}
+const OUTCOME_LABEL={baled_dry:'Baled dry',rained_on:'Rained on',baleage:'Baleage',regrowth:'Left it'};
+function renderLog(){
+  document.getElementById('logCount').textContent=LOG.length?LOG.length+' logged':'';
+  const learnEl=document.getElementById('learn');
+  const withOutcome=LOG.filter(e=>e.outcome).length;
+  if(LOG.length<3){
+    learnEl.innerHTML=`<b>${LOG.length}</b> cut${LOG.length===1?'':'s'} logged. After a cut is baled, tap it and set the <b>outcome</b>. With a few outcomes the model starts calibrating dry-down to your fields.`;
+  }else{
+    const cal=calibration(LOG),L=computeLearn(LOG);
+    const calLine=cal.length?`Turned out well by call: <b>${cal.map(c=>c.band+' '+c.good+'/'+c.n).join(' · ')}</b>. `:'';
+    const biasLine=L.n>=3?`Your fields run <b>${L.bias>=0?'+':''}${L.bias.toFixed(1)}d</b> vs predicted (${L.n} outcomes) — score adjusted.`:'';
+    learnEl.innerHTML=`<b>${LOG.length}</b> cuts · <b>${withOutcome}</b> with outcomes. ${calLine}${biasLine}`;
+  }
+  const list=document.getElementById('logList');list.innerHTML='';
+  LOG.slice().reverse().slice(0,6).forEach(e=>{
+    const d=new Date(e.cutDate||e.ts),row=document.createElement('div');row.className='logrow';
+    const mk=MAKING[e.product]||MAKING.dry_square, cr=CROPS[e.crop]||CROPS.grass;
+    const oc=e.outcome, ocCls=oc==='baled_dry'?'dry':oc==='rained_on'?'rain':oc==='baleage'?'wrap':'';
+    const bits=[];
+    if(e.field)bits.push('@ '+e.field);
+    if(e.ctx&&e.ctx.predictedDryDays!=null)bits.push('pred '+e.ctx.predictedDryDays+'d');
+    if(e.actualDryDays!=null)bits.push('actual '+e.actualDryDays+'d');
+    if(e.moistureAtBale!=null)bits.push(e.moistureAtBale+'% moist');
+    const sub=bits.length?`<span class="sub2">${bits.join(' · ')}</span>`:'';
+    row.innerHTML=`<span class="sp">${cr.name} · ${mk.short}${sub}</span>
+      <span class="tagpill ${ocCls}">${oc?OUTCOME_LABEL[oc]:'open'}</span>
+      <span class="meta">${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}<br>score ${e.ctx&&e.ctx.score!=null?e.ctx.score:'—'}</span>`;
+    row.style.cursor='pointer';row.onclick=()=>{EDIT_ID=e.id;openEditor(e);};
+    list.appendChild(row);
+  });
+  document.getElementById('storeNote').textContent=Store.persistent?'':'Storage is blocked here, so the log and fields reset on reload. They persist once installed or hosted on your own site.';
+}
+function renderAll(){
+  LEARN=computeLearn(LOG);
+  renderProduct();renderBest();renderHero();renderDays();renderPlan();renderChart();renderConditions();renderSpots();renderLog();
+}
+
+/* ================= build day aggregates ================= */
+const dstr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function buildDays(){
+  DAYS=[];if(!DAILY)return;
+  for(let i=0;i<DAILY.date.length;i++){
+    const date=DAILY.date[i];
+    const dt=dewTimes(date,DAILY.sunrise[i]);
+    const d={idx:i,date,et0:DAILY.et0[i],rain:DAILY.rainSum[i],rainProb:DAILY.rainProbMax[i],
+      tmax:DAILY.tmax[i],tmin:DAILY.tmin[i],sunrise:DAILY.sunrise[i],sunset:DAILY.sunset[i],
+      rhNight:overnightRH(date),dewOff:dt.off,dewSet:dt.set,dewLingers:dt.lingers,
+      rainCount:null,rainFrac:null};
+    if(MODELDAY&&MODELDAY[date]){d.rainCount=MODELDAY[date].count;d.rainFrac=MODELDAY[date].frac;}
+    DAYS.push(d);
+  }
+}
+// Dew burn-off / set-in times. Morning dew-off = first hour after sunrise the swath is workable
+// (humidity dropped enough that dew has lifted); evening dew-set = when humidity climbs back and dew
+// returns, i.e. stop baling. Threshold ~72% RH is a common haymaking rule of thumb. If RH never drops
+// that low, dew lingers all day (a poor drying day).
+function parseClock(iso){if(!iso)return null;const h=parseInt(iso.slice(11,13),10),m=parseInt(iso.slice(14,16),10);return h*60+m;}
+function dewTimes(date,sunriseIso){
+  if(!HOURLY)return {off:null,set:null,lingers:false};
+  const sr=parseClock(sunriseIso);
+  let off=null,set=null,sawLow=false;
+  for(let k=0;k<HOURLY.time.length;k++){
+    if(HOURLY.time[k].slice(0,10)!==date)continue;
+    const h=parseInt(HOURLY.time[k].slice(11,13),10),rh=HOURLY.rh[k];
+    if(rh==null)continue;
+    const min=h*60;
+    if(off==null && (sr==null||min>=sr-30) && rh<=72){off=min;}
+    if(rh<=72)sawLow=true;
+    if(off!=null && min>off+120 && set==null && rh>=88){set=min;}   // dew returns in the evening
+  }
+  return {off,set,lingers:!sawLow};
+}
+// max relative humidity overnight (20:00 of date → 07:00 next day) — proxy for dew / swath re-wetting
+function overnightRH(date){
+  if(!HOURLY)return null;
+  let mx=null;
+  for(let k=0;k<HOURLY.time.length;k++){
+    const t=HOURLY.time[k],day=t.slice(0,10),h=parseInt(t.slice(11,13),10),rh=HOURLY.rh[k];
+    if(rh==null)continue;
+    const nd=new Date(date+'T00:00:00');nd.setDate(nd.getDate()+1);const nextStr=dstr(nd);
+    if((day===date&&h>=20)||(day===nextStr&&h<=7)){if(mx==null||rh>mx)mx=rh;}
+  }
+  return mx;
+}
+
+/* ================= weather (Open-Meteo) ================= */
+async function loadWeather(){
+  HOURLY=null;DAILY=null;const noteEl=document.getElementById('wxNote');
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${SEL.lat}&longitude=${SEL.lon}`+
+    `&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation,precipitation_probability,cloud_cover,wind_speed_10m,wind_direction_10m,vapour_pressure_deficit`+
+    `&daily=precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration,temperature_2m_max,temperature_2m_min,sunrise,sunset`+
+    `&forecast_days=14&timezone=auto&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+  try{
+    const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json(),h=j.hourly,dl=j.daily;
+    HOURLY={time:h.time,temp:h.temperature_2m,rh:h.relative_humidity_2m,dew:h.dew_point_2m,
+      precip:h.precipitation,precipProb:h.precipitation_probability,cloud:h.cloud_cover,
+      wind:h.wind_speed_10m,windDir:h.wind_direction_10m,vpd:h.vapour_pressure_deficit};
+    DAILY={date:dl.time,et0:dl.et0_fao_evapotranspiration,rainSum:dl.precipitation_sum,
+      rainProbMax:dl.precipitation_probability_max,tmax:dl.temperature_2m_max,tmin:dl.temperature_2m_min,
+      sunrise:dl.sunrise,sunset:dl.sunset};
+    noteEl.textContent='';
+  }catch(e){noteEl.textContent='Live weather did not load. Retry once you have signal.';}
+}
+// Multi-model rain agreement: per calendar day, how many models see meaningful rain (≥2mm).
+async function loadModels(){
+  MODELDAY=null;
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${SEL.lat}&longitude=${SEL.lon}`+
+    `&hourly=precipitation&models=${MODELS.map(m=>m.id).join(',')}&forecast_days=14&timezone=auto`;
+  try{
+    const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json(),h=j.hourly;if(!h||!h.time)throw 0;
+    // sum daily precip per model
+    const perModel={}; // id -> {date -> mm}
+    MODELS.forEach(m=>{
+      const arr=h['precipitation_'+m.id]; if(!arr)return;
+      const day={};
+      for(let i=0;i<h.time.length;i++){const dsd=h.time[i].slice(0,10),v=arr[i];if(v==null)continue;day[dsd]=(day[dsd]||0)+v;}
+      perModel[m.id]=day;
+    });
+    const avail=Object.keys(perModel);if(!avail.length)throw 0;
+    const dates={};
+    avail.forEach(id=>{Object.keys(perModel[id]).forEach(dt=>{dates[dt]=dates[dt]||{count:0,wet:0};});});
+    Object.keys(dates).forEach(dt=>{
+      let count=0,wet=0;
+      avail.forEach(id=>{const v=perModel[id][dt];if(v==null)return;count++;if(v>=2)wet++;});
+      dates[dt]={count,frac:count?wet/count:0};
+    });
+    MODELDAY=dates;
+  }catch(e){MODELDAY=null;}
+}
+
+/* ================= county (FCC Area API, free) — for future per-state notes ================= */
+async function loadCounty(){
+  try{
+    const r=await fetch(`https://geo.fcc.gov/api/census/area?lat=${SEL.lat}&lon=${SEL.lon}&format=json`);
+    if(!r.ok)throw 0;const j=await r.json();const a=(j.results&&j.results[0])||null;
+    COUNTY=a&&a.county_name?a.county_name:null;USTATE=a&&a.state_code?a.state_code:null;
+  }catch(e){COUNTY=null;USTATE=null;}
+}
+
+/* ================= actions ================= */
+async function update(){
+  const lat=parseFloat(document.getElementById('lat').value),lon=parseFloat(document.getElementById('lon').value);
+  if(isNaN(lat)||isNaN(lon)){document.getElementById('locNote').textContent='Enter a valid latitude and longitude.';return;}
+  SEL.lat=lat;SEL.lon=lon;jset('hw_lastloc',{lat,lon});
+  document.getElementById('locNote').textContent='Loading forecasts…';
+  await Promise.all([loadWeather(),loadModels(),loadCounty()]);
+  buildDays();
+  if(SEL.dayIdx>=DAYS.length)SEL.dayIdx=0;
+  renderAll();
+  document.getElementById('locNote').textContent=`Location: ${lat.toFixed(3)}, ${lon.toFixed(3)}`+(COUNTY?` · ${COUNTY}${USTATE?', '+USTATE:''}`:'');
+}
+function setCoords(lat,lon){document.getElementById('lat').value=lat.toFixed(4);document.getElementById('lon').value=lon.toFixed(4);}
+document.getElementById('run').onclick=update;
+let coordTimer=null;
+function scheduleCoordUpdate(){
+  clearTimeout(coordTimer);
+  coordTimer=setTimeout(()=>{
+    const lat=parseFloat(document.getElementById('lat').value),lon=parseFloat(document.getElementById('lon').value);
+    if(isNaN(lat)||isNaN(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
+    if(lat===SEL.lat&&lon===SEL.lon)return;
+    update();
+  },800);
+}
+document.getElementById('lat').addEventListener('input',scheduleCoordUpdate);
+document.getElementById('lon').addEventListener('input',scheduleCoordUpdate);
+
+// location search (Open-Meteo geocoding — free, keyless)
+let placeTimer=null;
+const psEl=document.getElementById('placeSearch'),prEl=document.getElementById('placeResults');
+async function searchPlace(q){
+  try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`);
+    if(!r.ok)throw 0;return (await r.json()).results||[];}catch(e){return [];}
+}
+function renderPlaceResults(list){
+  if(!list.length){prEl.className='results';prEl.innerHTML='';return;}
+  prEl.innerHTML=list.map((p,i)=>{const sub=[p.admin1,p.country_code].filter(Boolean).join(', ');
+    return `<div class="ritem" data-i="${i}">${p.name}${sub?` <small>${sub}</small>`:''}</div>`;}).join('');
+  prEl.className='results on';
+  [...prEl.querySelectorAll('.ritem')].forEach(el=>el.onclick=()=>{
+    const p=list[+el.dataset.i];setCoords(p.latitude,p.longitude);psEl.value=p.name;prEl.className='results';prEl.innerHTML='';update();});
+}
+if(psEl){
+  psEl.addEventListener('input',()=>{clearTimeout(placeTimer);const q=psEl.value.trim();
+    if(q.length<2){prEl.className='results';prEl.innerHTML='';return;}
+    placeTimer=setTimeout(async()=>{renderPlaceResults(await searchPlace(q));},350);});
+  document.addEventListener('click',e=>{if(!e.target.closest('.searchwrap'))prEl.className='results';});
+}
+document.getElementById('useLoc').onclick=()=>{
+  const note=document.getElementById('locNote');note.textContent='Locating…';
+  if(!navigator.geolocation){note.textContent='This device will not share location. Enter it by hand.';return;}
+  navigator.geolocation.getCurrentPosition(p=>{setCoords(p.coords.latitude,p.coords.longitude);update();},
+    e=>{note.textContent='Could not get location. Enter it by hand above.';},{enableHighAccuracy:true,timeout:8000});
+};
+document.getElementById('saveSpot').onclick=()=>{
+  const name=prompt('Name this field (e.g. Home field, River bottom):');if(!name)return;
+  SPOTS.push({name:name.slice(0,24),lat:SEL.lat,lon:SEL.lon});jset('hw_fields',SPOTS);renderSpots();
+};
+document.getElementById('editSpots').onclick=()=>{SPOTEDIT=!SPOTEDIT;renderSpots();};
+
+// snapshot the forecast at the moment of logging a cut, so outcomes can be scored against it later
+function snapshotCtx(D){
+  if(!DAYS.length)return {et0Window:null,rainWindow:null,rainProbMax:null,minOvernightRH:null,score:null,predictedDryDays:null};
+  const r=scoreCut(D);
+  return {et0Window:Math.round(r.accMax*10)/10, rainWindow:Math.round(r.rainWindow*10)/10,
+    rainProbMax:r.rainProbMax, minOvernightRH:DAYS[D]?Math.round(DAYS[D].rhNight):null,
+    score:Math.round(r.score), predictedDryDays:r.pddEnough?r.pdd:null};
+}
+document.getElementById('logAdd').onclick=()=>{
+  const D=SEL.dayIdx;
+  const cutDate=new Date();cutDate.setDate(cutDate.getDate()+D);cutDate.setHours(12,0,0,0);
+  const rec={id:uid(), v:1, ts:Date.now(),
+    lat:SEL.lat, lon:SEL.lon, field:nearestSpot(SEL.lat,SEL.lon),
+    crop:CROP, product:PRODUCT, cutDate:cutDate.getTime(),
+    ctx:snapshotCtx(D), outcome:null, moistureAtBale:null, actualDryDays:null, note:null};
+  LOG.push(rec);jset('hw_log',LOG);EDIT_ID=rec.id;openEditor(rec);renderAll();
+};
+/* ---- optional detail editor ---- */
+function chipPick(groupId,val){document.querySelectorAll('#'+groupId+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===val));}
+function openEditor(rec){
+  const ed=document.getElementById('editor');ed.classList.add('on');
+  const cr=CROPS[rec.crop]||CROPS.grass, mk=MAKING[rec.product]||MAKING.dry_square;
+  document.getElementById('edWhen').textContent=new Date(rec.cutDate||rec.ts).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})+' · '+cr.name+' '+mk.short;
+  chipPick('edOutcome',rec.outcome);
+  document.getElementById('edDryDays').value=rec.actualDryDays??'';
+  document.getElementById('edMoist').value=rec.moistureAtBale??'';
+  document.getElementById('edNote').value=rec.note||'';
+  ed.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+document.querySelectorAll('#edOutcome .chip').forEach(c=>c.onclick=()=>chipPick('edOutcome',c.classList.contains('on')?null:c.dataset.v));
+const chipVal=id=>{const on=document.querySelector('#'+id+' .chip.on');return on?on.dataset.v:null;};
+const numOrNull=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
+document.getElementById('edSave').onclick=()=>{
+  const rec=LOG.find(r=>r.id===EDIT_ID);if(!rec){document.getElementById('editor').classList.remove('on');return;}
+  rec.outcome=chipVal('edOutcome');
+  rec.actualDryDays=numOrNull(document.getElementById('edDryDays').value);
+  rec.moistureAtBale=numOrNull(document.getElementById('edMoist').value);
+  rec.note=document.getElementById('edNote').value.trim().slice(0,140)||null;
+  jset('hw_log',LOG);document.getElementById('editor').classList.remove('on');EDIT_ID=null;renderAll();
+};
+document.getElementById('edDelete').onclick=()=>{
+  if(!EDIT_ID)return;if(!confirm('Delete this logged cut?'))return;
+  LOG=LOG.filter(r=>r.id!==EDIT_ID);jset('hw_log',LOG);document.getElementById('editor').classList.remove('on');EDIT_ID=null;renderAll();
+};
+document.getElementById('logClear').onclick=()=>{if(confirm('Clear the whole cutting log?')){LOG=[];jset('hw_log',LOG);renderAll();}};
+document.getElementById('logExport').onclick=()=>{const t=document.getElementById('logIO');t.style.display='block';t.value=JSON.stringify(LOG);t.select();};
+document.getElementById('logImport').onclick=()=>{const t=document.getElementById('logIO');
+  if(t.style.display!=='block'){t.style.display='block';t.value='';t.placeholder='Paste cutting-log JSON, then tap Import again';return;}
+  try{const a=JSON.parse(t.value);if(Array.isArray(a)){LOG=normalizeLog(a);jset('hw_log',LOG);t.style.display='none';renderAll();}}
+  catch(e){alert('That does not look like valid cutting-log JSON.');}
+};
+
+/* ================= install prompt ================= */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBar').style.display='flex';});
+document.getElementById('installBtn').onclick=async()=>{
+  if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;
+  deferredPrompt=null;document.getElementById('installBar').style.display='none';
+};
+window.addEventListener('appinstalled',()=>{document.getElementById('installBar').style.display='none';});
+(function(){const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  if(iOS&&!standalone){const bar=document.getElementById('installBar');
+    bar.querySelector('span').innerHTML='<b>Add to Home Screen</b>: Share → Add to Home Screen';
+    bar.querySelector('button').style.display='none';bar.style.display='flex';}
+})();
+
+/* ================= theme ================= */
+function applyTheme(t){
+  document.documentElement.classList.toggle('light',t==='light');
+  const btn=document.getElementById('themeBtn');if(btn)btn.textContent=t==='light'?'☀️':'🌙';
+  const meta=document.querySelector('meta[name=theme-color]');if(meta)meta.setAttribute('content',t==='light'?'#e9efe7':'#0e1c14');
+}
+let THEME=jget('hw_theme',null)||((window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark');
+applyTheme(THEME);
+document.getElementById('themeBtn').onclick=()=>{THEME=THEME==='light'?'dark':'light';jset('hw_theme',THEME);applyTheme(THEME);};
+
+/* ================= tip jar ================= */
+(function(){const w=document.getElementById('tipWrap'),b=document.getElementById('tipBtn');
+  if(TIP_URL&&/^https?:\/\//.test(TIP_URL)){b.href=TIP_URL;w.style.display='block';}else{w.style.display='none';}})();
+
+/* ================= units ================= */
+document.getElementById('unitBtn').textContent=UNITS==='metric'?'Metric':'US';
+document.getElementById('unitBtn').onclick=()=>{UNITS=UNITS==='metric'?'US':'metric';jset('hw_units',UNITS);renderAll();};
+
+/* ================= why + share ================= */
+document.getElementById('whyBtn').onclick=()=>{WHYOPEN=!WHYOPEN;renderHero();};
+document.getElementById('shareBtn').onclick=shareForecast;
+async function shareForecast(){
+  if(!DAYS.length)return;
+  const r=scoreCut(SEL.dayIdx),t=r.tier;
+  const spot=nearestSpot(SEL.lat,SEL.lon)||`${SEL.lat.toFixed(2)}, ${SEL.lon.toFixed(2)}`;
+  const mk=MAKING[PRODUCT],cr=CROPS[CROP];
+  const hex=r.score>=72?'#4bbf7a':r.score>=52?'#e8b23a':r.score>=34?'#e08a3c':'#e2603f';
+  try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(e){}
+  const C=1080,cv=document.createElement('canvas');cv.width=C;cv.height=C;const x=cv.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,C);g.addColorStop(0,'#1c3a28');g.addColorStop(.55,'#0e1c14');g.addColorStop(1,'#081109');
+  x.fillStyle=g;x.fillRect(0,0,C,C);
+  x.textBaseline='alphabetic';x.font='600 66px Fraunces, Georgia, serif';
+  const w1=x.measureText('Hay').width,wd=x.measureText('·').width,w2=x.measureText('Watch').width,sx=(C-(w1+wd+w2))/2;
+  x.textAlign='left';x.fillStyle='#eef4ee';x.fillText('Hay',sx,150);
+  x.fillStyle='#e8b23a';x.fillText('·',sx+w1,150);x.fillStyle='#eef4ee';x.fillText('Watch',sx+w1+wd,150);
+  x.textAlign='center';
+  x.fillStyle='#8fae98';x.font='500 34px Barlow, sans-serif';x.fillText(`${dayName(SEL.dayIdx)}  ·  ${spot}`,C/2,212);
+  x.fillStyle=hex;x.font='700 128px "Barlow Semi Condensed", Barlow, sans-serif';x.fillText(t.word.toUpperCase(),C/2,400);
+  x.fillStyle='#eef4ee';x.font='600 56px "Barlow Semi Condensed", sans-serif';x.fillText(Math.round(r.score)+' / 100',C/2,478);
+  const mw=720,mh=26,mx=(C-mw)/2,my=524;
+  x.fillStyle='#0c1c12';roundRect(x,mx,my,mw,mh,13);x.fill();
+  x.fillStyle=hex;roundRect(x,mx,my,Math.max(mh,mw*r.score/100),mh,13);x.fill();
+  x.fillStyle='#eef4ee';x.font='500 38px Barlow, sans-serif';
+  x.fillText(r.pddEnough?`Dry-down ~${r.pdd} days · ${r.confidence} model agreement`:`Not enough drying power`,C/2,636);
+  x.fillStyle='#8fae98';x.font='500 32px Barlow, sans-serif';x.fillText(`${cr.name} · ${mk.short}`,C/2,690);
+  // wrap risk line
+  x.fillStyle='#c9d8cd';x.font='500 34px Barlow, sans-serif';wrapText(x,riskLine(r),C/2,770,900,44);
+  x.fillStyle='#e8b23a';x.font='600 34px Barlow, sans-serif';x.fillText('haywatch.pages.dev',C/2,1000);
+  const text=`🌾 HayWatch — ${dayName(SEL.dayIdx)} near ${spot}: ${t.word} (${Math.round(r.score)}/100) for ${mk.short}. ${riskLine(r)} haywatch.pages.dev`;
+  cv.toBlob(async(blob)=>{
+    const file=new File([blob],'haywatch.png',{type:'image/png'});
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return;}
+      if(navigator.share){await navigator.share({text});return;}
+    }catch(e){return;}
+    try{await navigator.clipboard.writeText(text);}catch(e){}
+    const u=URL.createObjectURL(blob);window.open(u,'_blank');
+  },'image/png');
+}
+function wrapText(c,text,cx,y,maxW,lh){
+  const words=text.split(' ');let line='',yy=y;
+  words.forEach(w=>{const test=line+w+' ';if(c.measureText(test).width>maxW&&line){c.fillText(line.trim(),cx,yy);line=w+' ';yy+=lh;}else line=test;});
+  c.fillText(line.trim(),cx,yy);
+}
+function roundRect(c,x,y,w,h,r){r=Math.min(r,h/2,w/2);c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+/* ================= init ================= */
+(function(){
+  const last=jget('hw_lastloc',null);
+  if(last){SEL.lat=last.lat;SEL.lon=last.lon;setCoords(last.lat,last.lon);}
+  renderProduct();
+  update();
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      if(!last||haversine(last.lat,last.lon,p.coords.latitude,p.coords.longitude)>0.5){
+        setCoords(p.coords.latitude,p.coords.longitude);update();}
+    },()=>{},{enableHighAccuracy:false,timeout:9000,maximumAge:600000});
+  }
+})();
+
+/* ================= service worker ================= */
+if('serviceWorker' in navigator){
+  let __reloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(__reloading)return;__reloading=true;location.reload();});
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{try{r.update();}catch(e){}}).catch(()=>{}));
+}
+</script>
+</body>
+</html>

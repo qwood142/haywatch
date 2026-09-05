@@ -1,0 +1,186 @@
+# CLAUDE.md — HayWatch
+
+Project instructions for Claude Code. Read this fully before touching anything. HayWatch is a fork of
+BiteWatch (fishing bite-time forecast) and shares its architecture and hard constraints.
+
+## What this is
+
+A hay dry-down forecast PWA. It answers **"when should I cut, and will it dry before it rains."** It
+scores each upcoming candidate cut day by the quality of the drying window that follows, so a farmer
+can pick a safe stretch to cut → ted → rake → bale. 100% client-side, no backend, no API keys, no
+build step, no dependencies, no framework. The entire app is one file: `index.html` (HTML + CSS +
+vanilla JS in a single `<script>`). This is intentional — see "Rules".
+
+Home region: Potsdam / St. Lawrence County, NY (default coords 44.67, -75.00).
+
+## Entity / naming
+
+Legal entity: **Woods Market LLC**. HayWatch is a d/b/a (Certificate of Assumed Name) at the NY
+Department of State — sibling to the BiteWatch d/b/a. Public face reads "HayWatch"; rolls up to the one
+LLC. Git repo: `qwood142/haywatch` (created). Cloudflare Pages project: `haywatch` (created,
+git-connected). Push to the production branch → auto-deploy.
+
+## File map
+
+```
+index.html    the whole app (day aggregates, dry-down scoring, multi-model agreement, dew timing,
+              cutting log, render, actions — all here)
+manifest.json PWA manifest
+sw.js         service worker (offline shell); bump CACHE const to force clients to refresh
+README.md     user-facing deploy + tuning notes
+CLAUDE.md     this file  ← source of truth for decisions/schema/tuning
+icon-192.png / icon-512.png / icon-maskable-512.png   ⚠ STILL BITEWATCH ART (amber crescent + fish).
+              Swap motif to sun + hay/grass. No generator in repo — edit the PNGs as images.
+.claude/launch.json   local dev-server config (npx serve on :3210) for the preview pane
+```
+
+There is no data file to load (unlike BiteWatch's `regs.json`) — everything comes from live APIs.
+
+## Run locally
+
+No build. Serve it (service worker + geolocation need HTTPS or localhost):
+
+```
+npx serve .
+```
+
+Or use the preview pane via `.claude/launch.json` (name `haywatch`). Opening `index.html` directly
+(file://) works for a quick look but disables the service worker and geolocation.
+
+## Deploy
+
+Git-connected Cloudflare **Pages** project `haywatch`. Framework preset None, build command empty,
+build output directory `/` (root). Push to the production branch → auto-deploy. Do NOT use the Workers
+`wrangler deploy` create-flow for a static site — it deploys nothing without a config.
+
+## Rules (do not break without an explicit decision from the owner)
+
+1. **No backend, no server, no API keys, no build step, no npm dependencies.** Everything runs in the
+   browser off free keyless APIs (Open-Meteo). Anything that breaks this is a deliberate v2 call.
+2. **Single-file app.** Keep it in `index.html` unless the owner asks to split it.
+3. **Logging stays one tap.** `Log a cut now` creates a complete record immediately; every extra field
+   (outcome, actual dry days, moisture, note) is optional and defaulted. Never gate logging behind a form.
+4. **Scoring weights are guesses, not truth.** Don't present them as validated. The cutting log is the
+   calibration path. Preserve the "planning aid, not a guarantee" framing in the UI and docs.
+5. **Safety + liability framing stays.** Hay baled wet is a real barn-fire / spoilage hazard. Keep the
+   safety note (probe your bales) and the LLC liability disclaimer prominent. Privacy: LLC is home-address
+   tied; no app stores. If catch/cut sharing lands (v2), the shared record fuzzes coords to field/area.
+
+## Data (Open-Meteo, free, no key)
+
+Two fetches per location, both keyless GETs:
+
+- **Primary** (`loadWeather`): `forecast_days=14`, hourly `temperature_2m, relative_humidity_2m,
+  dew_point_2m, precipitation, precipitation_probability, cloud_cover, wind_speed_10m,
+  wind_direction_10m, vapour_pressure_deficit`; daily `precipitation_sum, precipitation_probability_max,
+  et0_fao_evapotranspiration, temperature_2m_max/min, sunrise, sunset`. Requested in
+  `temperature_unit=fahrenheit&wind_speed_unit=mph`; **precip and ET₀ stay in mm internally** and are
+  converted for display.
+- **Multi-model** (`loadModels`): hourly `precipitation` with `models=ecmwf_ifs04,gfs_seamless,
+  icon_seamless,gem_seamless,meteofrance_seamless`. Per calendar day, counts how many models see
+  meaningful rain (≥2 mm) → `rainFrac` / `rainCount`. This is the **forecast agreement** signal.
+  ECMWF is short-range (~7 d), so far-out days naturally have fewer models = lower confidence.
+
+`loadCounty` (FCC Area API) reverse-geocodes county/state for the location line. Open-Meteo geocoding
+powers the place search.
+
+## Scoring model (`scoreCut(D)` — the core new work vs BiteWatch)
+
+Key driver: **`et0_fao_evapotranspiration`** (reference ET) is a single composite "drying power" number
+folding in radiation, temperature, humidity and wind. Rain (amount × probability × model agreement) is
+the dominant penalty.
+
+For each candidate cut day D:
+1. **`predictDryDays(D)`** — accumulate daytime effective ET₀ from D until it reaches the product's
+   `needMm` (crop `dryFactor` × making `needMm`). Cut day counts as a half drying day. `effEt0` discounts
+   ET₀ for genuinely saturated overnights via `dewMult`. Returns predicted dry-down days (or Infinity =
+   not enough drying power in the horizon).
+2. **Base** from drying-power surplus/deficit over the ideal window (`60 + 42·surplus`).
+3. **Rain penalty (dominant):** over the curing window, `((amt·2.4)+(prob·6))·conf·qw / rainTol`, where
+   `qw` rises across the window (rain on drier hay leaches quality worse) and `conf` discounts penalty
+   when models disagree. A hard-rain day inside the window (≥7 mm with ≥40% model agreement, or ≥12 mm)
+   forces the score to "Don't cut".
+4. **Dew penalty:** small, only for RH ≥97% overnights (dew that lingers, not routine nightly dew).
+5. **Short-window / not-enough-drying-power:** flagged and penalized; Infinity dry-down caps the score.
+6. **Confidence** from model unanimity across the window × horizon decay → High / Medium / Low.
+
+Tiers: **Prime cut ≥72 / Good ≥52 / Marginal ≥34 / Don't cut** (green/gold/orange/red). `bestCutDay()`
+scans all 14 days for the top score. `riskLine(r)` emits the plain-language callout (e.g. "Heavy rain
+Wed (4 of 4 models) — you'd be baling into it. Wait.").
+
+### Crop / making presets (the "species" analog — informed guesses, calibrate via the log)
+
+`CROPS` set a `dryFactor` (legumes/thick stems dry slower): grass 1.00, orchard/timothy 1.05, mixed
+1.10, alfalfa 1.22, clover 1.25. `MAKING` sets `needMm` (cumulative ET₀ to target), `maxDays` (ideal
+window), `rainTol` (rain forgiveness), `dewSens`, `wet`:
+
+```
+dry_square (small squares) needMm 12, maxDays 5, rainTol 0.18   target 16–18%
+dry_round  (round bales)   needMm 10, maxDays 5, rainTol 0.32   target ~18%   (more rain-tolerant)
+dry_large  (large squares) needMm 14, maxDays 6, rainTol 0.12   target ≤14%   (driest, most demanding)
+baleage    (wrapped)       needMm 4,  maxDays 2, rainTol 0.70   target 45–55% (wilt & wrap; forgiving)
+```
+
+These are the "wet hay vs dry hay, square vs round" dimension the owner asked for. All numbers are
+informed starting points, **not** validated — the cutting log calibrates.
+
+## Dew burn-off / set-in (`dewTimes`, surfaced in the plan + conditions)
+
+Per day: morning **dew-off** = first hour after sunrise RH drops to ≤72% (swath workable); evening
+**dew-set** = when RH climbs back ≥88% (stop baling). If RH never drops to 72%, dew **lingers all day**
+(a poor drying day). Shown per day in "Your plan for this cut" and for today in Conditions. Currently
+informational; wiring it into `effEt0` (shorten the effective drying day by the dew-off→set window) is a
+reasonable future refinement.
+
+## Cutting-log schema (v1) — sync-ready, same discipline as BiteWatch
+
+```jsonc
+{
+  "id": "h...", "v": 1, "ts": 0,
+  "lat": 0, "lon": 0, "field": null,        // nearest saved Field = per-field anchor (local only, fuzz before sharing)
+  "crop": "grass", "product": "dry_square", // matches the preset picked
+  "cutDate": 0,                             // the selected cut day (may be a future day, not just now)
+  "ctx": { "et0Window": 0, "rainWindow": 0, "rainProbMax": 0, "minOvernightRH": 0,
+           "score": 0, "predictedDryDays": 0 },   // forecast snapshot at log time
+  "outcome": null,                          // baled_dry | rained_on | baleage | regrowth | (null = open)
+  "moistureAtBale": null, "actualDryDays": null, "note": null   // all optional
+}
+```
+
+Log stays one tap; every field after the snapshot is optional. `normalizeLog()` upgrades old records on
+load/import. **The outcome + actualDryDays are the gold** — logging "rained_on" vs "baled_dry" against
+the forecast snapshot is what lets the model learn. `computeLearn()` nudges dry-down by the mean
+(actual − predicted) once ≥3 outcomes carry `actualDryDays` (bounded ±1.5 d). `calibration()` reports
+how cuts turned out, bucketed by the score at cut time, for the honest-limits readout.
+
+## Storage
+
+`Store` shim → localStorage with in-memory fallback. Keys: `hw_log`, `hw_fields`, `hw_lastloc`,
+`hw_theme`, `hw_units`, `hw_crop`, `hw_making`. JSON helpers `jget`/`jset`.
+
+## Roadmap
+
+1. ✅ v1: multi-model dry-down engine, crop/making presets (wet/dry, square/round), 14-day outlook,
+   drying-power + rain chart, cut→cure→bale plan, dew burn-off timing, cutting log with outcomes,
+   Fields, PWA shell, share card, safety + liability framing.
+2. Tip button URL (`TIP_URL` const at top of `<script>`, empty = hidden) — platform owner's choice.
+3. Real HayWatch icon art (icons are still BiteWatch's fish). Swap motif to sun + hay bale/grass over
+   the dark green gradient. No generator in the repo — edit the PNGs as images or add one back.
+4. Optional refinements: wire dew-off→set window into `effEt0`; add `soil_moisture_0_to_7cm`; a
+   cut/ted/rake/bale step tracker per active cut; push/rain-on-cut alerts.
+5. v2 (deliberate, breaks no-server): shared per-field outcomes → a real dry-down dataset (same moat
+   logic as BiteWatch). Cloudflare Worker + D1. Fuzz coords on the shared record.
+
+## Known rough edges
+
+- In a genuinely wet fortnight every cut window catches rain, so the whole 14-day outlook can read
+  "Don't cut" with scores at 0. That's honest, not a bug — but the flatness hides relative ranking. If
+  it bugs the owner, let the raw score go slightly negative internally so least-bad days still sort.
+- Icons are BiteWatch art (see roadmap 3).
+- Dry-down `needMm` and rain-penalty weights are unvalidated guesses; the log is the calibration path.
+
+## Working style
+
+Owner is direct and iterative: short prompts, prefers building over long explanation, auto-mode Claude
+Code, reviews after; cross-checks data against local/first-party sources (defer to local data on
+conflict). Keep this file current when decisions change or a session nears its limit.
