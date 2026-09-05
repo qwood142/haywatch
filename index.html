@@ -228,10 +228,37 @@
   </div>
 
   <section class="panel">
+    <h2>Field / location <span class="sub" id="locSub"></span></h2>
+    <div class="spotrow" id="spotRow"></div>
+    <div class="searchwrap">
+      <label class="slabel">Search location</label>
+      <input id="placeSearch" class="searchinput" placeholder="Town, city, or place…" autocomplete="off">
+      <div class="results" id="placeResults"></div>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>Latitude</label><input id="lat" inputmode="decimal" value="44.67"></div>
+      <div class="field"><label>Longitude</label><input id="lon" inputmode="decimal" value="-75.00"></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button class="primary" id="useLoc">Use my location</button>
+      <button id="saveSpot">Save field</button>
+      <button id="editSpots">Edit fields</button>
+      <button id="run">Update</button>
+    </div>
+    <div class="loc" id="locNote">Locating…</div>
+  </section>
+
+  <section class="panel">
     <h2>What you're making <span class="sub" id="prodSub"></span></h2>
     <div class="selrow">
       <div class="selcol"><label>Crop</label><select id="cropSel" class="sel"></select></div>
       <div class="selcol"><label>Making</label><select id="makingSel" class="sel"></select></div>
+    </div>
+    <div class="selrow" style="margin-top:10px">
+      <div class="selcol"><label>Cutting equipment</label><select id="condSel" class="sel">
+        <option value="cond">Mower-conditioner (crimped)</option>
+        <option value="plain">Plain cut (no conditioner)</option>
+      </select></div>
     </div>
     <div class="prodnote" id="prodNote"></div>
   </section>
@@ -335,27 +362,6 @@
     <div class="note" id="storeNote"></div>
   </section>
 
-  <section class="panel">
-    <h2>Fields</h2>
-    <div class="spotrow" id="spotRow"></div>
-    <div class="searchwrap">
-      <label class="slabel">Search location</label>
-      <input id="placeSearch" class="searchinput" placeholder="Town, city, or place…" autocomplete="off">
-      <div class="results" id="placeResults"></div>
-    </div>
-    <div class="ctrls">
-      <div class="field"><label>Latitude</label><input id="lat" inputmode="decimal" value="44.67"></div>
-      <div class="field"><label>Longitude</label><input id="lon" inputmode="decimal" value="-75.00"></div>
-    </div>
-    <div class="actions" style="margin-top:10px">
-      <button class="primary" id="useLoc">Use my location</button>
-      <button id="saveSpot">Save field</button>
-      <button id="editSpots">Edit fields</button>
-      <button id="run">Update</button>
-    </div>
-    <div class="loc" id="locNote">Locating…</div>
-  </section>
-
   <div class="tipwrap" id="tipWrap" style="display:none">
     <a class="tipbtn" id="tipBtn" target="_blank" rel="noopener">☕ Support HayWatch</a>
   </div>
@@ -398,18 +404,26 @@ const MODELS=[
      making → needMm (cumulative reference-ET drying power to reach target moisture), target
               moisture band, maxDays (ideal window length), rainTol (how forgiving of rain in-window;
               higher = more tolerant), dewSens (how much overnight dew stretches the cure). */
+// dryFactor: thicker/waxier stems dry slower. condBenefit: fraction knocked off the drying need when
+// cut with a mower-conditioner (crimped/rolled). Conditioning saves ~1 day, but the benefit is large
+// for thick-stemmed legumes and small for grasses (thin stems, waxy cuticle the crimper barely helps)
+// — Purdue / UGA / Wisconsin extension. See CLAUDE.md sources.
 const CROPS={
-  grass:  {name:'Grass hay',            dryFactor:1.00},
-  mixed:  {name:'Mixed grass-legume',   dryFactor:1.10},
-  alfalfa:{name:'Alfalfa',              dryFactor:1.22},
-  clover: {name:'Clover',               dryFactor:1.25},
-  orchard:{name:'Orchardgrass / timothy',dryFactor:1.05},
+  grass:  {name:'Grass hay',            dryFactor:1.00, condBenefit:0.06},
+  orchard:{name:'Orchardgrass / timothy',dryFactor:1.05, condBenefit:0.08},
+  mixed:  {name:'Mixed grass-legume',   dryFactor:1.12, condBenefit:0.14},
+  alfalfa:{name:'Alfalfa',              dryFactor:1.22, condBenefit:0.24},
+  clover: {name:'Clover',               dryFactor:1.25, condBenefit:0.24},
 };
+// needMm calibrated to the NNY field-drying baseline (verified against extension figures + owner's
+// lived numbers): conditioned grass hay reaches baling moisture in ~2 days on a good stretch, ~3 on a
+// mediocre one, ~4 with heavy overnight dew. Baleage wilts in ~1 day. All still informed guesses — the
+// cutting log calibrates. maxDays = the acceptable window before "slow cure" kicks in.
 const MAKING={
-  dry_square:{name:'Dry hay — small squares', short:'small squares', target:'16–18%', needMm:12, maxDays:5, rainTol:0.18, dewSens:1.00, wet:false},
-  dry_round: {name:'Dry hay — round bales',   short:'round bales',   target:'~18%',   needMm:10, maxDays:5, rainTol:0.32, dewSens:1.00, wet:false},
-  dry_large: {name:'Dry hay — large squares', short:'large squares', target:'≤14%',   needMm:14, maxDays:6, rainTol:0.12, dewSens:1.10, wet:false},
-  baleage:   {name:'Baleage — wrapped',       short:'wrapped baleage',target:'45–55%', needMm:4,  maxDays:2, rainTol:0.70, dewSens:0.45, wet:true},
+  dry_square:{name:'Dry hay — small squares', short:'small squares', target:'16–18%', needMm:8, maxDays:4, rainTol:0.18, dewSens:1.00, wet:false},
+  dry_round: {name:'Dry hay — round bales',   short:'round bales',   target:'~18%',   needMm:7, maxDays:4, rainTol:0.32, dewSens:1.00, wet:false},
+  dry_large: {name:'Dry hay — large squares', short:'large squares', target:'≤14%',   needMm:10,maxDays:5, rainTol:0.12, dewSens:1.10, wet:false},
+  baleage:   {name:'Baleage — wrapped',       short:'wrapped baleage',target:'45–55%', needMm:2, maxDays:2, rainTol:0.70, dewSens:0.45, wet:true},
 };
 
 /* ================= storage ================= */
@@ -428,6 +442,7 @@ let SEL={lat:44.67,lon:-75.00,dayIdx:0};      // dayIdx = selected candidate cut
 let SPOTS=jget('hw_fields',[]);
 let UNITS=jget('hw_units','US');               // 'US' (°F, mph, in) | 'metric' (°C, km/h, mm)
 let CROP=jget('hw_crop','grass'), PRODUCT=jget('hw_making','dry_square');
+let CONDITIONED=jget('hw_cond',true);   // cut with a mower-conditioner (crimped) vs plain cut
 if(!CROPS[CROP])CROP='grass'; if(!MAKING[PRODUCT])PRODUCT='dry_square';
 
 let HOURLY=null;      // {time,temp,rh,dew,precip,precipProb,cloud,wind,vpd} parallel arrays
@@ -498,9 +513,15 @@ function dewMult(d){
 // Effective drying power for a day (mm of reference ET), discounted for overnight dew.
 function effEt0(d){ return d.et0!=null?d.et0*dewMult(d):0; }
 
+// Drying power (mm of reference ET) required to reach baling moisture — crop stem-thickness × product
+// target, reduced when cut with a conditioner (crop-dependent benefit).
+function dryNeed(){
+  const cr=CROPS[CROP];
+  return cr.dryFactor*MAKING[PRODUCT].needMm*(CONDITIONED?(1-cr.condBenefit):1);
+}
 // Predict dry-down days from cut day D. Cut afternoon counts as a half drying day.
 function predictDryDays(D){
-  const need=CROPS[CROP].dryFactor*MAKING[PRODUCT].needMm;
+  const need=dryNeed();
   let acc=0,days=0;
   for(let i=D;i<DAYS.length;i++){
     const w=(i===D)?0.5:1;                       // cut-day: afternoon only
@@ -539,7 +560,7 @@ function scoreCut(D){
       const pen=((amt*2.4)+(prob*6)) * conf * qw / mk.rainTol;
       rainPen+=pen;
       if((amt>=7&&agree>=0.4)||(amt>=12))hardRain=true;
-      if(!worstRain||amt>worstRain.amt)worstRain={idx:j,amt,prob:dd.rainProb,agree:dd.rainFrac,models:dd.rainCount};
+      if(!worstRain||amt>worstRain.amt)worstRain={idx:j,amt,prob:dd.rainProb,agree:dd.rainFrac,models:dd.rainCount,arrival:dd.rainArrival};
     }
   }
   parts.push({label:'Rain in window',v:-rainPen});
@@ -592,26 +613,30 @@ function dayShort(i){
 }
 
 /* ================= risk line (plain language) ================= */
+function whenPhrase(w){return w.arrival!=null?` from ~${fmtClock(w.arrival)}`:'';}
 function riskLine(r){
   const mk=MAKING[PRODUCT];
   if(r.hardRain&&r.worstRain){
     const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
-    return `Heavy rain ${dayShort(w.idx)}${m} — you'd be baling into it. Wait.`;
+    return `Heavy rain ${dayShort(w.idx)}${whenPhrase(w)}${m} — you'd be baling into it. Wait.`;
   }
   if(r.tooLong){
     return `Not enough drying power in the next ${DAYS.length} days for ${mk.short}. Consider baleage or wait.`;
   }
   if(r.rainPen>22&&r.worstRain){
     const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
-    return `Rain risk ${dayShort(w.idx)}${m} mid-cure — tight, watch it closely.`;
+    return `Rain risk ${dayShort(w.idx)}${whenPhrase(w)}${m} mid-cure — tight, watch it closely.`;
   }
   if(r.heavyDew){
     return `Clear days but heavy overnight dew — the swath re-wets, add drying time.`;
   }
   if(r.pddEnough){
     const bale=Math.min(DAYS.length-1,r.D+Math.ceil(r.pdd));
-    if(r.score>=72)return `Open drying stretch — cut ${dayShort(r.D)}, bale around ${dayShort(bale)}. Good to go.`;
-    return `Workable window — cut ${dayShort(r.D)}, aim to bale by ${dayShort(bale)}.`;
+    // if there's a light shower later in the window, tell them the deadline to bale ahead of it
+    let ahead='';
+    if(r.worstRain&&r.worstRain.arrival!=null&&r.worstRain.idx>=bale){ahead=` — bale ahead of ${dayShort(r.worstRain.idx)}'s rain (~${fmtClock(r.worstRain.arrival)})`;}
+    if(r.score>=72)return `Open drying stretch — cut ${dayShort(r.D)}, bale around ${dayShort(bale)}${ahead}. Good to go.`;
+    return `Workable window — cut ${dayShort(r.D)}, aim to bale by ${dayShort(bale)}${ahead}.`;
   }
   return `Marginal drying — no margin if the forecast slips.`;
 }
@@ -646,12 +671,19 @@ function renderProduct(){
   const ms=document.getElementById('makingSel');ms.innerHTML='';
   Object.keys(MAKING).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=MAKING[k].name;if(k===PRODUCT)o.selected=true;ms.appendChild(o);});
   ms.onchange=()=>{PRODUCT=ms.value;jset('hw_making',PRODUCT);SEL.dayIdx=Math.min(SEL.dayIdx,DAYS.length-1);renderAll();};
-  const mk=MAKING[PRODUCT];
+  const csd=document.getElementById('condSel');
+  csd.value=CONDITIONED?'cond':'plain';
+  csd.onchange=()=>{CONDITIONED=csd.value==='cond';jset('hw_cond',CONDITIONED);renderAll();};
+  const mk=MAKING[PRODUCT],cr=CROPS[CROP];
   document.getElementById('prodSub').textContent=mk.wet?'forgiving — wilt & wrap':'needs a clear stretch';
+  const condNote=CONDITIONED
+    ? (cr.condBenefit>=0.2?` Crimping cuts drying roughly a day on ${cr.name.toLowerCase()}'s thick stems.`
+       :cr.condBenefit>=0.12?` Crimping shaves some drying time.`
+       :` Crimping helps grasses only a little — thin stems, waxy leaf.`)
+    : ` Plain-cut adds drying time — no crimped stems to let moisture out.`;
   document.getElementById('prodNote').innerHTML=
     `Target moisture <b>${mk.target}</b> · ideal window <b>~${mk.maxDays} day${mk.maxDays===1?'':'s'}</b>.`+
-    (mk.wet?` Baleage wilts one day then gets wrapped wet — far more rain-tolerant than dry hay.`
-           :` Dry hay needs the full clear stretch; ${CROPS[CROP].name.toLowerCase()} dries ${CROPS[CROP].dryFactor>1.1?'slowly':'at a normal pace'}.`);
+    (mk.wet?` Baleage wilts ~a day then gets wrapped wet — far more rain-tolerant than dry hay.`:condNote);
 }
 function renderBest(){
   const bar=document.getElementById('bestBar');
@@ -675,7 +707,7 @@ function renderHero(){
   el('meterFill').style.background=`linear-gradient(90deg,var(--card-hi),${t.color})`;
   el('dayLabel').textContent=SEL.dayIdx===0?'Cut today?':'Cut '+dayName(SEL.dayIdx).toLowerCase()+'?';
   el('reasonMain').textContent=riskLine(r);el('reasonWhy').textContent='';
-  el('mDry').innerHTML=r.pddEnough?`${r.pdd}<small> days</small>`:`—`;
+  el('mDry').innerHTML=r.pddEnough?`${Math.ceil(r.pdd)}<small> days</small>`:`—`;
   el('mRain').innerHTML=`${valOf(rainStr(r.rainWindow))}<small> ${rainUnit()}</small>`;
   const cc=r.confidence==='High'?'hi':r.confidence==='Medium'?'med':'lo';
   el('mConf').innerHTML=`<span class="conf ${cc}">${r.confidence}</span>`;
@@ -696,7 +728,7 @@ function renderDays(){
     const c=document.createElement('div');c.className='day'+(on?' on':'');
     c.innerHTML=`<div class="dow">${i===0?'Today':dayShort(i)}</div>
       <div class="num">${Math.round(r.score)}</div><div class="rw" style="color:${t.color}">${t.word}</div>
-      <div class="bw">${r.pddEnough?r.pdd+'d dry':'—'}</div>`;
+      <div class="bw">${r.pddEnough?Math.ceil(r.pdd)+'d dry':'—'}</div>`;
     c.onclick=()=>{SEL.dayIdx=i;renderAll();};
     el.appendChild(c);
   }
@@ -720,15 +752,15 @@ function renderPlan(){
     subs.push(dewText(dd));
     const rp=dd.rainProb!=null?dd.rainProb:null;
     const rainTxt=rain>0.05?rainStr(rain):(rp?rp+'%':'dry');
-    const modTxt=(dd.rainCount&&dd.rainFrac>0)?`${Math.round(dd.rainFrac*dd.rainCount)}/${dd.rainCount} wet`:'';
+    const arr=(wetDay&&dd.rainArrival!=null)?'from ~'+fmtClock(dd.rainArrival):((dd.rainCount&&dd.rainFrac>0)?`${Math.round(dd.rainFrac*dd.rainCount)}/${dd.rainCount} wet`:'');
     const row=document.createElement('div');row.className='step';
     row.innerHTML=`<span class="dot ${cls}"></span>
       <div class="lab">${dayName(j)}<span>${role} · ${subs.join(' · ')}</span></div>
-      <div class="val">${rainTxt}<span>${rp!=null&&rain>0.05?rp+'% · ':''}${modTxt||'rain'}</span></div>`;
+      <div class="val">${rainTxt}<span>${arr||(rp!=null?rp+'%':'dry')}</span></div>`;
     list.appendChild(row);
   }
   note.textContent=r.pddEnough
-    ? `Predicted dry-down: ~${r.pdd} days for ${MAKING[PRODUCT].short}. Cut → ted to speed drying → rake → bale when moisture is in range.`
+    ? `Predicted dry-down: ~${Math.ceil(r.pdd)} days for ${MAKING[PRODUCT].short}${CONDITIONED?', crimped':', plain-cut'}. Cut → ted to speed drying → rake → bale when moisture is in range.`
     : `The next ${DAYS.length} days don't offer enough drying power to reach ${MAKING[PRODUCT].target} for ${MAKING[PRODUCT].short}.`;
 }
 function renderChart(){
@@ -841,7 +873,7 @@ function buildDays(){
     const d={idx:i,date,et0:DAILY.et0[i],rain:DAILY.rainSum[i],rainProb:DAILY.rainProbMax[i],
       tmax:DAILY.tmax[i],tmin:DAILY.tmin[i],sunrise:DAILY.sunrise[i],sunset:DAILY.sunset[i],
       rhNight:overnightRH(date),dewOff:dt.off,dewSet:dt.set,dewLingers:dt.lingers,
-      rainCount:null,rainFrac:null};
+      rainArrival:rainArrival(date),rainCount:null,rainFrac:null};
     if(MODELDAY&&MODELDAY[date]){d.rainCount=MODELDAY[date].count;d.rainFrac=MODELDAY[date].frac;}
     DAYS.push(d);
   }
@@ -865,6 +897,19 @@ function dewTimes(date,sunriseIso){
     if(off!=null && min>off+120 && set==null && rh>=88){set=min;}   // dew returns in the evening
   }
   return {off,set,lingers:!sawLow};
+}
+// When rain first arrives on a given day (minutes into the day), from the hourly forecast — the
+// actionable "you've got until X to bale ahead of it" signal. First hour with ≥0.4 mm precip OR ≥55%
+// chance. Null = no meaningful rain that day.
+function rainArrival(date){
+  if(!HOURLY)return null;
+  for(let k=0;k<HOURLY.time.length;k++){
+    if(HOURLY.time[k].slice(0,10)!==date)continue;
+    const h=parseInt(HOURLY.time[k].slice(11,13),10);
+    const p=HOURLY.precip?HOURLY.precip[k]:null, pp=HOURLY.precipProb?HOURLY.precipProb[k]:null;
+    if((p!=null&&p>=0.4)||(pp!=null&&pp>=55))return h*60;
+  }
+  return null;
 }
 // max relative humidity overnight (20:00 of date → 07:00 next day) — proxy for dew / swath re-wetting
 function overnightRH(date){
@@ -944,6 +989,7 @@ async function update(){
   if(SEL.dayIdx>=DAYS.length)SEL.dayIdx=0;
   renderAll();
   document.getElementById('locNote').textContent=`Location: ${lat.toFixed(3)}, ${lon.toFixed(3)}`+(COUNTY?` · ${COUNTY}${USTATE?', '+USTATE:''}`:'');
+  document.getElementById('locSub').textContent=COUNTY?`${COUNTY}${USTATE?', '+USTATE:''}`:'';
 }
 function setCoords(lat,lon){document.getElementById('lat').value=lat.toFixed(4);document.getElementById('lon').value=lon.toFixed(4);}
 document.getElementById('run').onclick=update;
@@ -999,7 +1045,7 @@ function snapshotCtx(D){
   const r=scoreCut(D);
   return {et0Window:Math.round(r.accMax*10)/10, rainWindow:Math.round(r.rainWindow*10)/10,
     rainProbMax:r.rainProbMax, minOvernightRH:DAYS[D]?Math.round(DAYS[D].rhNight):null,
-    score:Math.round(r.score), predictedDryDays:r.pddEnough?r.pdd:null};
+    score:Math.round(r.score), predictedDryDays:r.pddEnough?Math.ceil(r.pdd):null};
 }
 document.getElementById('logAdd').onclick=()=>{
   const D=SEL.dayIdx;
@@ -1103,8 +1149,8 @@ async function shareForecast(){
   x.fillStyle='#0c1c12';roundRect(x,mx,my,mw,mh,13);x.fill();
   x.fillStyle=hex;roundRect(x,mx,my,Math.max(mh,mw*r.score/100),mh,13);x.fill();
   x.fillStyle='#eef4ee';x.font='500 38px Barlow, sans-serif';
-  x.fillText(r.pddEnough?`Dry-down ~${r.pdd} days · ${r.confidence} model agreement`:`Not enough drying power`,C/2,636);
-  x.fillStyle='#8fae98';x.font='500 32px Barlow, sans-serif';x.fillText(`${cr.name} · ${mk.short}`,C/2,690);
+  x.fillText(r.pddEnough?`Dry-down ~${Math.ceil(r.pdd)} days · ${r.confidence} model agreement`:`Not enough drying power`,C/2,636);
+  x.fillStyle='#8fae98';x.font='500 32px Barlow, sans-serif';x.fillText(`${cr.name} · ${mk.short} · ${CONDITIONED?'crimped':'plain-cut'}`,C/2,690);
   // wrap risk line
   x.fillStyle='#c9d8cd';x.font='500 34px Barlow, sans-serif';wrapText(x,riskLine(r),C/2,770,900,44);
   x.fillStyle='#e8b23a';x.font='600 34px Barlow, sans-serif';x.fillText('haywatch.pages.dev',C/2,1000);

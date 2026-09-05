@@ -17,7 +17,11 @@ Everything runs in your browser off free public weather data.
   (ECMWF, GFS, ICON, GEM, Météo-France). When the models agree, confidence is High; when they split,
   it tells you to wait. That agreement is shown right on the forecast.
 - **Drying power (reference ET₀)** — one number folding sun, heat, wind and dryness — drives the
-  estimated dry-down days, adjusted for overnight dew.
+  estimated dry-down days, adjusted for overnight dew and your cutting equipment.
+- **Rain arrival timing** — not just "rain Wednesday" but *"heavy rain Wed from ~12 PM — you'd be
+  baling into it,"* so you know your deadline to get off the field.
+- **Cutting equipment** — mower-conditioner (crimped) vs plain cut. Crimping saves ~a day on
+  thick-stemmed legumes (alfalfa, clover) and a little on grass, and the estimate reflects it.
 - **Dew burn-off timing** — each day's morning dew-off and evening dew-set times: your workable window
   for cutting, raking and baling. Flags days when dew lingers.
 - **Your plan for this cut** — a day-by-day cut → cure → bale timeline for the day you're eyeing.

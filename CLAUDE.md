@@ -108,21 +108,46 @@ Tiers: **Prime cut ≥72 / Good ≥52 / Marginal ≥34 / Don't cut** (green/gold
 scans all 14 days for the top score. `riskLine(r)` emits the plain-language callout (e.g. "Heavy rain
 Wed (4 of 4 models) — you'd be baling into it. Wait.").
 
-### Crop / making presets (the "species" analog — informed guesses, calibrate via the log)
+### Crop / making / equipment presets (the "species" analog — calibrated guesses, log refines)
 
-`CROPS` set a `dryFactor` (legumes/thick stems dry slower): grass 1.00, orchard/timothy 1.05, mixed
-1.10, alfalfa 1.22, clover 1.25. `MAKING` sets `needMm` (cumulative ET₀ to target), `maxDays` (ideal
-window), `rainTol` (rain forgiveness), `dewSens`, `wet`:
+`dryNeed()` = `crop.dryFactor × making.needMm × (conditioned ? 1−crop.condBenefit : 1)`.
+
+- **`CROPS.dryFactor`** (thick/waxy stems dry slower): grass 1.00, orchard/timothy 1.05, mixed 1.12,
+  alfalfa 1.22, clover 1.25.
+- **`CROPS.condBenefit`** (drying knocked off when cut with a mower-conditioner/crimper — big for
+  thick-stemmed legumes, small for grasses): grass 0.06, orchard 0.08, mixed 0.14, alfalfa/clover 0.24.
+- **`MAKING`** sets `needMm`, `maxDays` (window before "slow cure"), `rainTol` (rain forgiveness),
+  `dewSens`, `wet`:
 
 ```
-dry_square (small squares) needMm 12, maxDays 5, rainTol 0.18   target 16–18%
-dry_round  (round bales)   needMm 10, maxDays 5, rainTol 0.32   target ~18%   (more rain-tolerant)
-dry_large  (large squares) needMm 14, maxDays 6, rainTol 0.12   target ≤14%   (driest, most demanding)
-baleage    (wrapped)       needMm 4,  maxDays 2, rainTol 0.70   target 45–55% (wilt & wrap; forgiving)
+dry_square (small squares) needMm 8,  maxDays 4, rainTol 0.18   target 16–18%
+dry_round  (round bales)   needMm 7,  maxDays 4, rainTol 0.32   target ~18%   (more rain-tolerant)
+dry_large  (large squares) needMm 10, maxDays 5, rainTol 0.12   target ≤14%   (driest, most demanding)
+baleage    (wrapped)       needMm 2,  maxDays 2, rainTol 0.70   target 45–55% (wilt ~a day; forgiving)
 ```
 
-These are the "wet hay vs dry hay, square vs round" dimension the owner asked for. All numbers are
-informed starting points, **not** validated — the cutting log calibrates.
+- **`CONDITIONED`** (persisted `hw_cond`, default true): mower-conditioner (crimped) vs plain cut. This
+  is the "cutting equipment matters" dimension the owner asked for.
+
+**Calibration (verified against extension sources + owner's lived NNY numbers):** conditioned grass
+hay reaches baling moisture in ~2 days on a good stretch, ~3 mediocre, ~4 with heavy dew; conditioning
+saves ~1 day on legumes; grass benefits little (thin stems, waxy cuticle). Baseline field-dry to hay
+is 2–3 days (2–4 in tough weather). Sources: Purdue Pest&Crop (mower-conditioner adjustments), UGA
+Forage ("Importance of Hay Conditioning"), UW-Madison Extension (field-drying forage — wide swath >
+conditioning for fast dry-down; ≥70% cut width), Nebraska CropWatch / UMass (2–4 day alfalfa curing).
+Still informed guesses — the cutting log's logged outcomes are the real calibration path.
+
+**Predicted dry-down days** are shown as whole **calendar** days (`Math.ceil` of the ET₀ accumulator),
+because that's how a farmer counts (cut Mon, bale Tue = "2 days").
+
+### Rain-arrival timing (`rainArrival`, surfaced in the risk line + plan)
+
+Per day, the first hour precip ≥0.4 mm or ≥55% chance = when rain arrives. The risk line uses it
+("Heavy rain Wed **from ~12:00 PM** (4 of 4 models) — you'd be baling into it"), and the plan shows
+"rain from ~3 PM" on wet days. This is the "will the front clip me, and by when must I bale" question.
+Note: the global models are ~10–25 km grid, so exact-pin precision mostly matters via the near-term
+high-res model already blended into `gfs_seamless` (HRRR, first ~18–48 h). A future win is adding HRRR
+explicitly and weighting it for the 0–2 day window; wide-swath is another un-modeled fast-dry lever.
 
 ## Dew burn-off / set-in (`dewTimes`, surfaced in the plan + conditions)
 
@@ -156,13 +181,20 @@ how cuts turned out, bucketed by the score at cut time, for the honest-limits re
 ## Storage
 
 `Store` shim → localStorage with in-memory fallback. Keys: `hw_log`, `hw_fields`, `hw_lastloc`,
-`hw_theme`, `hw_units`, `hw_crop`, `hw_making`. JSON helpers `jget`/`jset`.
+`hw_theme`, `hw_units`, `hw_crop`, `hw_making`, `hw_cond`. JSON helpers `jget`/`jset`.
+
+## Panel order
+
+Location-first by owner request (per-field weather is the priority in this app): **Field / location →
+What you're making (crop / making / equipment) → best-day bar → today's call → 14-day outlook → plan →
+drying-power chart → conditions → cutting log**.
 
 ## Roadmap
 
-1. ✅ v1: multi-model dry-down engine, crop/making presets (wet/dry, square/round), 14-day outlook,
+1. ✅ v1: multi-model dry-down engine, crop/making/equipment presets (wet/dry, square/round,
+   crimped/plain), region-calibrated dry-down (2/3/4 days), rain-arrival timing, 14-day outlook,
    drying-power + rain chart, cut→cure→bale plan, dew burn-off timing, cutting log with outcomes,
-   Fields, PWA shell, share card, safety + liability framing.
+   location-first layout, Fields, PWA shell, share card, safety + liability framing.
 2. Tip button URL (`TIP_URL` const at top of `<script>`, empty = hidden) — platform owner's choice.
 3. Real HayWatch icon art (icons are still BiteWatch's fish). Swap motif to sun + hay bale/grass over
    the dark green gradient. No generator in the repo — edit the PNGs as images or add one back.
