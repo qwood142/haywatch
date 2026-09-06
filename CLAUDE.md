@@ -192,7 +192,8 @@ shared per-field dataset. There is intentionally no `computeLearn`/score-feedbac
 
 Location-first by owner request (per-field weather is the priority in this app): **Field / location →
 What you're making (crop / making / equipment) → best-day bar → today's call → 14-day outlook → plan →
-drying-power chart → forecast models → conditions → cutting log → How it works (FAQ)**.
+drying-power chart → forecast models → radar (near your field, lazy) → conditions → cutting log →
+How it works (FAQ)**. The Fields panel also carries a lazy "Compare my fields" table (≥2 fields).
 
 ## Forecast models panel + FAQ
 
@@ -222,24 +223,24 @@ by default and the owner accepts this on BiteWatch, so it's left as-is unless th
 2. Tip button URL (`TIP_URL` const at top of `<script>`, empty = hidden) — platform owner's choice.
 3. ✅ Real HayWatch icon art (sun + round hay bale + grass on the dark-green gradient); source in
    `haywatch_icon.svg`.
-4. **Scattered vs widespread rain classification** (owner-requested). A "40% chance" is PoP =
-   confidence × areal coverage — in convective season it usually means "scattered, ~40% of the area gets
-   hit" (one town soaked, the next dry: the classic DeKalb-dry / Gouverneur-wet split), NOT "40% chance
-   your field gets rained on." Classify each rain day as **widespread/frontal** (models agree, meaningful
-   amounts → trust it, county-wide) vs **scattered/airmass** (models disagree, low amounts, hot humid
-   afternoon, "showers" weather codes → hit-or-miss, your field may dodge it). Label it on the day/plan so
-   the user knows whether a PoP is the trustworthy kind or the gamble kind. Highest value / lowest effort
-   of this group — derivable from data already fetched (model spread + amount + convective signals).
-5. **"Your fields — live & near-term" dashboard** (owner-requested). Three layers: (a) all pinned Fields
-   side by side with next-3-day score + rain risk, so nearby fields' differences show at a glance;
-   (b) higher-res near-term per field — **NWS `api.weather.gov`** (US-only, ~2.5 km gridpoint hourly +
-   PoP + alerts; keyless, CORS-OK, tested working from the browser) or Open-Meteo `minutely_15`, where
-   sub-county rain differences actually start to resolve; (c) a live **RainViewer** radar loop centered
-   on the selected field (free, no key, CORS-OK — tested; `api.rainviewer.com/public/weather-maps.json`
-   gives ~2 h past frames + short nowcast frames; DISPLAY the loop, don't pixel-sample — reading tile
-   pixels is CORS-dicey). Caveat: radar nowcast only reaches ~0–60 min, so this is a same-day
-   "keep-baling-or-not" mode, distinct from the multi-day planner. Pairs with #4 (the scattered label is
-   the interpreter). All keyless/no-backend — fits the constraints.
+4. ✅ **Scattered vs widespread rain classification.** `rainKind(d)` → `dry | scattered | widespread`
+   from model spread (`rainFrac`), amount vs PoP, and convective-vs-stratiform WMO `weather_code`
+   (`convSignals`: showers 80–82/95–99 = scattered; drizzle/steady 51–67/71–77 = widespread). A "40%"
+   is coverage × confidence, so scattered = the "rains in Gouverneur, misses DeKalb" case. Surfaced in
+   the risk line (`kindTail`: "widespread, don't count on dodging it" vs "scattered, your field may dodge
+   it, but it's a gamble") and as a tag on the plan's wet-day rows. No new panel — folded into existing UI.
+5. ✅ **Fields dashboard pieces (condensed).** (a) **Radar panel** — collapsible, lazy (loads only when
+   opened); RainViewer (`api.rainviewer.com/public/weather-maps.json`, free/keyless/CORS-OK — tested).
+   3×3 radar tiles at zoom 9 centered on the field, dark ground (precip only), SVG overlay with the field
+   marker + 25/50 mi range rings, frame scrubber + play across ~2 h past (+ nowcast frames when present).
+   `RADAR` state; `loadRadar`/`renderRadarFrame`; re-centers on field change if open. DISPLAY only — no
+   pixel-sampling (CORS-dicey). Radar nowcast reaches ~0–60 min = same-day "keep-baling" mode, not
+   planning. (b) **Compare my fields** — button in the Fields panel, shown only with ≥2 pinned fields;
+   `compareFields()` lazily fetches each field (loadWeather+loadModels+buildDays), shows best-cut-day +
+   next-rain(kind) per field in a compact table, then restores the current field's globals. This is where
+   the DeKalb/Gouverneur split shows. **Deliberately CUT** the NWS 2.5 km / Open-Meteo `minutely_15`
+   near-term layer as bloat — radar covers "is it coming" and multi-model covers planning. NWS
+   (`api.weather.gov`, keyless, CORS-OK, ~2.5 km + alerts) remains a viable future add if wanted.
 6. Other refinements: add HRRR (3 km) explicitly to the near-term rain agreement, weighted for the 0–2
    day window; add a wide-swath drying factor (extension: wide swath > conditioning for fast dry-down);
    wire dew-off→set window into `effEt0`; add `soil_moisture_0_to_7cm`; a cut/ted/rake/bale step tracker

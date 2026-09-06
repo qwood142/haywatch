@@ -213,6 +213,23 @@
   .mrow .mval{font-family:"Barlow Semi Condensed";font-weight:600;font-size:15px;white-space:nowrap;text-align:right}
   .mrow .mval span{display:block;font-size:11.5px;color:var(--mut);font-weight:500}
 
+  #compareBox{display:none;grid-template-columns:1.1fr 1.4fr 1.2fr;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:11px}
+  #compareBox>div{background:var(--card);padding:8px 10px;font-size:13px}
+  #compareBox .cmphdr{background:var(--inset);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut)}
+  #radarPanel summary{cursor:pointer;padding:4px 2px;font-weight:600;font-size:14px;list-style:none;display:flex;align-items:center;gap:9px;color:var(--sky)}
+  #radarPanel summary::-webkit-details-marker{display:none}
+  #radarPanel summary::before{content:'▸';color:var(--sky);font-weight:700;flex:0 0 auto}
+  #radarPanel[open] summary::before{content:'▾'}
+  .radarwrap{position:relative;width:100%;aspect-ratio:1;margin-top:12px;border-radius:12px;overflow:hidden;
+    background:#0a1610;border:1px solid var(--line)}
+  .radarwrap .rgrid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)}
+  .radarwrap .rgrid img{width:100%;height:100%;display:block;object-fit:cover}
+  .radarwrap svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .radarhint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;text-align:center;padding:0 20px}
+  .radarctrls{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .radarctrls button{padding:6px 12px}
+  .radarctrls #radarTime{font-family:"Barlow Semi Condensed";font-weight:600;font-size:14px;flex:1;text-align:center}
   .faq details{border-top:1px solid var(--line)}
   .faq details:first-of-type{border-top:0}
   .faq summary{cursor:pointer;padding:12px 2px;font-weight:600;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:9px}
@@ -267,6 +284,8 @@
       <button id="run">Update</button>
     </div>
     <div class="loc" id="locNote">Locating…</div>
+    <button id="compareBtn" style="display:none;width:100%;margin-top:11px">Compare my fields</button>
+    <div id="compareBox"></div>
   </section>
 
   <section class="panel">
@@ -334,6 +353,23 @@
     <h2>Forecast models <span class="sub" id="modelSub"></span></h2>
     <div class="mnote" id="modelIntro"></div>
     <div id="modelList"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Radar near your field <span class="sub">tap to load</span></h2>
+    <details id="radarPanel">
+      <summary>Live radar &amp; motion (same-day)</summary>
+      <div id="radarBody">
+        <div class="radarwrap" id="radarWrap"><div class="radarhint" id="radarHint">Loading radar…</div></div>
+        <div class="radarctrls" id="radarCtrls" style="display:none">
+          <button id="radarPrev">◀</button>
+          <span id="radarTime">—</span>
+          <button id="radarNext">▶</button>
+          <button id="radarPlay">▶ Play</button>
+        </div>
+        <div class="note" id="radarNote"></div>
+      </div>
+    </details>
   </section>
 
   <section class="panel">
@@ -418,6 +454,29 @@
       <b>Forecast models</b> panel shows what each one says for your window. (Most consumer weather apps
       are proprietary blends built on these same government models — HayWatch just shows the sources and
       their spread directly.)</div>
+    </details>
+
+    <details>
+      <summary>“40% chance of rain” — but does it hit MY field?</summary>
+      <div class="fbody">A percentage is <b>coverage × confidence</b>, not "40% chance your field gets wet."
+      In summer it usually means <i>"showers will form and cover ~40% of the area"</i> — one town gets
+      soaked, the next stays dry. So HayWatch labels each rainy day:
+      <ul>
+        <li><b>Widespread</b> — a real system, the models agree, meaningful totals. The whole county gets
+        it; don't count on dodging it.</li>
+        <li><b>Scattered</b> — pop-up showers, models split, low totals, hot muggy afternoon. Hit-or-miss:
+        your field might dodge it, but it's a gamble.</li>
+      </ul>
+      For the scattered case there's no forecast on earth that can tell you days out whether your exact
+      field gets the cell — so on those days, watch the <b>radar</b> (below) the morning of.</div>
+    </details>
+
+    <details>
+      <summary>The radar panel</summary>
+      <div class="fbody">Live precipitation radar centered on your field (free, from RainViewer), with
+      rings at 25 and 50 miles. Scrub or play the last ~2 hours to see which way cells are moving — that's
+      your warning time on a scattered day. It only looks ~an hour ahead, so it's a <b>same-day,
+      about-to-cut</b> tool, not for planning days out.</div>
     </details>
 
     <details>
@@ -718,18 +777,25 @@ function dayShort(i){
 
 /* ================= risk line (plain language) ================= */
 function whenPhrase(w){return w.arrival!=null?` from ~${fmtClock(w.arrival)}`:'';}
+// rain-type tail for the risk line — the DeKalb/Gouverneur reconciliation in words
+function kindTail(idx){
+  const k=DAYS[idx]&&DAYS[idx].rainKind;
+  if(k==='scattered')return ` — scattered, so your field may dodge it, but it's a gamble`;
+  if(k==='widespread')return ` — widespread, don't count on dodging it`;
+  return '';
+}
 function riskLine(r){
   const mk=MAKING[PRODUCT];
   if(r.hardRain&&r.worstRain){
     const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
-    return `Heavy rain ${dayShort(w.idx)}${whenPhrase(w)}${m} — you'd be baling into it. Wait.`;
+    return `Heavy rain ${dayShort(w.idx)}${whenPhrase(w)}${m}${kindTail(w.idx)}. Wait.`;
   }
   if(r.tooLong){
     return `Not enough drying power in the next ${DAYS.length} days for ${mk.short}. Consider baleage or wait.`;
   }
   if(r.rainPen>22&&r.worstRain){
     const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
-    return `Rain risk ${dayShort(w.idx)}${whenPhrase(w)}${m} mid-cure — tight, watch it closely.`;
+    return `Rain risk ${dayShort(w.idx)}${whenPhrase(w)}${m} mid-cure${kindTail(w.idx)}. Watch it.`;
   }
   if(r.heavyDew){
     return `Clear days but heavy overnight dew — the swath re-wets, add drying time.`;
@@ -851,7 +917,8 @@ function renderPlan(){
     let cls='cure',role='Dry / cure',subs=[];
     if(isCut){cls='cut';role='Cut & ted';}
     if(isBale&&!wetDay){cls='bale';role='Bale';}
-    if(wetDay){cls='rain';role=isCut?'Cut (rain risk)':'Rain risk';}
+    if(wetDay){cls='rain';role=isCut?'Cut (rain risk)':'Rain risk';
+      if(dd.rainKind==='scattered')role+=' · scattered';else if(dd.rainKind==='widespread')role+=' · widespread';}
     subs.push('ET₀ '+valOf(rainStr(dd.et0))+' '+rainUnit());
     subs.push(dewText(dd));
     const rp=dd.rainProb!=null?dd.rainProb:null;
@@ -947,7 +1014,8 @@ function renderConditions(){
 }
 function renderSpots(){
   const el=document.getElementById('spotRow');el.innerHTML='';
-  const editBtn=document.getElementById('editSpots');
+  const editBtn=document.getElementById('editSpots'),cmpBtn=document.getElementById('compareBtn');
+  if(cmpBtn)cmpBtn.style.display=SPOTS.length>=2?'block':'none';
   if(!SPOTS.length){SPOTEDIT=false;if(editBtn)editBtn.textContent='Edit fields';
     el.innerHTML='<span class="loc" style="margin:0">No saved fields yet. Tap “Save field” to pin this spot.</span>';return;}
   if(editBtn)editBtn.textContent=SPOTEDIT?'Done':'Edit fields';
@@ -959,6 +1027,40 @@ function renderSpots(){
     else{b.onclick=()=>{SEL.lat=s.lat;SEL.lon=s.lon;setCoords(s.lat,s.lon);update();};}
     el.appendChild(b);
   });
+}
+// Compare all pinned fields side by side — lazy (only on button press), fetches each field's forecast,
+// then restores the current field's data so the main view is untouched. This is where the DeKalb vs
+// Gouverneur split shows: nearby fields, different calls.
+let COMPARING=false;
+async function compareFields(){
+  if(COMPARING||SPOTS.length<2)return;
+  COMPARING=true;
+  const box=document.getElementById('compareBox');box.style.display='grid';
+  box.innerHTML=`<div class="loc" style="grid-column:1/-1;margin:0;padding:10px">Comparing ${SPOTS.length} fields…</div>`;
+  const save={H:HOURLY,D:DAILY,M:MODELDAY,DAYS:DAYS,lat:SEL.lat,lon:SEL.lon};
+  const rows=[];
+  try{
+    for(const s of SPOTS){
+      SEL.lat=s.lat;SEL.lon=s.lon;
+      await Promise.all([loadWeather(),loadModels()]);
+      buildDays();
+      const b=DAYS.length?bestCutDay():null;
+      let nextRain=null;
+      for(let i=0;i<Math.min(DAYS.length,7);i++){if(DAYS[i].rainKind&&DAYS[i].rainKind!=='dry'){nextRain={i,kind:DAYS[i].rainKind};break;}}
+      rows.push({name:s.name,best:b,nextRain});
+    }
+  }catch(e){}
+  HOURLY=save.H;DAILY=save.D;MODELDAY=save.M;DAYS=save.DAYS;SEL.lat=save.lat;SEL.lon=save.lon;
+  box.innerHTML=`<div class="cmphdr">Field</div><div class="cmphdr">Best cut (14d)</div><div class="cmphdr">Next rain</div>`+
+    rows.map(r=>{
+      const b=r.best,tier=b?b.tier:null;
+      const bestTxt=(b&&b.tier.word!=='Don’t cut')?`${dayShort(b.D)} · ${b.tier.word} ${Math.round(b.score)}`:'none in 14d';
+      const nr=r.nextRain?`${dayShort(r.nextRain.i)} · ${r.nextRain.kind}`:'clear 7d';
+      return `<div style="font-weight:600">${r.name}</div>`+
+        `<div style="color:${tier?tier.color:'var(--mut)'}">${bestTxt}</div>`+
+        `<div style="color:${r.nextRain?(r.nextRain.kind==='widespread'?'var(--danger)':'var(--orange)'):'var(--good)'}">${nr}</div>`;
+    }).join('');
+  COMPARING=false;
 }
 const OUTCOME_LABEL={baled_dry:'Baled dry',rained_on:'Rained on',baleage:'Baleage',regrowth:'Left it'};
 function renderLog(){
@@ -993,6 +1095,8 @@ function renderLog(){
 }
 function renderAll(){
   renderProduct();renderBest();renderHero();renderDays();renderPlan();renderChart();renderModels();renderConditions();renderSpots();renderLog();
+  const rp=document.getElementById('radarPanel');   // keep radar centered on the current field if open
+  if(rp&&rp.open&&RADAR.loaded)renderRadarFrame();
 }
 
 /* ================= build day aggregates ================= */
@@ -1007,8 +1111,40 @@ function buildDays(){
       rhNight:overnightRH(date),dewOff:dt.off,dewSet:dt.set,dewLingers:dt.lingers,
       rainArrival:rainArrival(date),rainCount:null,rainFrac:null};
     if(MODELDAY&&MODELDAY[date]){d.rainCount=MODELDAY[date].count;d.rainFrac=MODELDAY[date].frac;}
+    const conv=convSignals(date);d.showers=conv.showers;d.steady=conv.steady;
+    d.rainKind=rainKind(d);
     DAYS.push(d);
   }
+}
+// Scan a day's hourly weather codes for the RAIN TYPE tell: shower/thunder codes (80–82, 95–99) are
+// convective = scattered/hit-or-miss; drizzle/steady-rain/snow codes (51–67, 71–77) are stratiform =
+// widespread. WMO weather codes via Open-Meteo.
+function convSignals(date){
+  if(!HOURLY||!HOURLY.wcode)return {showers:false,steady:false};
+  let showers=false,steady=false;
+  for(let k=0;k<HOURLY.time.length;k++){
+    if(HOURLY.time[k].slice(0,10)!==date)continue;
+    const c=HOURLY.wcode[k];if(c==null)continue;
+    if((c>=80&&c<=82)||(c>=95&&c<=99))showers=true;
+    if((c>=51&&c<=67)||(c>=71&&c<=77))steady=true;
+  }
+  return {showers,steady};
+}
+// Classify a day's rain: 'dry' | 'scattered' (hit-or-miss — your field may dodge it) | 'widespread'
+// (county-wide, don't count on dodging). A "40% chance" is areal coverage × confidence, so scattered
+// convective days are exactly the "rains in Gouverneur, misses DeKalb" case. Signals: model spread,
+// amount vs probability, and convective vs stratiform weather codes.
+function rainKind(d){
+  const amt=d.rain||0, pop=d.rainProb||0;
+  if(amt<0.4 && pop<40)return 'dry';
+  let sc=0,wide=0;
+  if(d.rainCount>=3){ if(d.rainFrac>=0.8)wide++; else if(d.rainFrac<=0.6)sc++; }  // models agree vs split
+  if(amt>=6)wide++; else if(amt<4&&pop>=45)sc++;                                   // amount vs bare PoP
+  if(d.showers)sc++;                                                               // convective codes
+  if(d.steady)wide++;                                                             // stratiform codes
+  if(sc>wide)return 'scattered';
+  if(wide>sc)return 'widespread';
+  return 'scattered';   // tie → uncertainty itself means patchy; hedge toward hit-or-miss
 }
 // Dew burn-off / set-in times. Morning dew-off = first hour after sunrise the swath is workable
 // (humidity dropped enough that dew has lifted); evening dew-set = when humidity climbs back and dew
@@ -1060,14 +1196,14 @@ function overnightRH(date){
 async function loadWeather(){
   HOURLY=null;DAILY=null;const noteEl=document.getElementById('wxNote');
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${SEL.lat}&longitude=${SEL.lon}`+
-    `&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation,precipitation_probability,cloud_cover,wind_speed_10m,wind_direction_10m,vapour_pressure_deficit`+
+    `&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation,precipitation_probability,cloud_cover,wind_speed_10m,wind_direction_10m,vapour_pressure_deficit,weather_code`+
     `&daily=precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration,temperature_2m_max,temperature_2m_min,sunrise,sunset`+
     `&forecast_days=14&timezone=auto&temperature_unit=fahrenheit&wind_speed_unit=mph`;
   try{
     const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json(),h=j.hourly,dl=j.daily;
     HOURLY={time:h.time,temp:h.temperature_2m,rh:h.relative_humidity_2m,dew:h.dew_point_2m,
       precip:h.precipitation,precipProb:h.precipitation_probability,cloud:h.cloud_cover,
-      wind:h.wind_speed_10m,windDir:h.wind_direction_10m,vpd:h.vapour_pressure_deficit};
+      wind:h.wind_speed_10m,windDir:h.wind_direction_10m,vpd:h.vapour_pressure_deficit,wcode:h.weather_code};
     DAILY={date:dl.time,et0:dl.et0_fao_evapotranspiration,rainSum:dl.precipitation_sum,
       rainProbMax:dl.precipitation_probability_max,tmax:dl.temperature_2m_max,tmin:dl.temperature_2m_min,
       sunrise:dl.sunrise,sunset:dl.sunset};
@@ -1100,6 +1236,54 @@ async function loadModels(){
     });
     MODELDAY=out;
   }catch(e){MODELDAY=null;}
+}
+
+/* ================= radar (RainViewer, free & keyless) =================
+   Same-day view: recent radar frames + short nowcast, centered on the selected field, over a plain
+   dark ground (precip only). Rings at 25/50 mi give geographic sense; watch cell motion for warning
+   time. Loads lazily only when the panel is opened. */
+const RADAR={z:9,host:null,frames:[],idx:0,playing:false,timer:null,loaded:false};
+function lon2tileF(lon,z){return (lon+180)/360*Math.pow(2,z);}
+function lat2tileF(lat,z){const r=lat*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,z);}
+async function loadRadar(){
+  const hint=document.getElementById('radarHint'),ctrls=document.getElementById('radarCtrls');
+  try{
+    const r=await fetch('https://api.rainviewer.com/public/weather-maps.json');if(!r.ok)throw 0;
+    const j=await r.json();RADAR.host=j.host;
+    const past=(j.radar&&j.radar.past)||[], now=(j.radar&&j.radar.nowcast)||[];
+    RADAR.frames=past.map(f=>({time:f.time,path:f.path,nowcast:false}))
+      .concat(now.map(f=>({time:f.time,path:f.path,nowcast:true})));
+    if(!RADAR.frames.length)throw 0;
+    RADAR.idx=Math.max(0,past.length-1);   // latest observed frame
+    RADAR.loaded=true;
+    document.getElementById('radarNote').innerHTML='Precipitation only, centered on your field — rings at 25 &amp; 50&nbsp;mi. No rain shows as dark. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.';
+    ctrls.style.display='flex';
+    renderRadarFrame();
+  }catch(e){if(hint)hint.textContent='Radar did not load (needs signal). Try again shortly.';}
+}
+function renderRadarFrame(){
+  if(!RADAR.loaded||!RADAR.frames.length)return;
+  const wrap=document.getElementById('radarWrap');if(!wrap)return;
+  const z=RADAR.z, fx=lon2tileF(SEL.lon,z), fy=lat2tileF(SEL.lat,z);
+  const cx=Math.floor(fx), cy=Math.floor(fy), fracX=fx-cx, fracY=fy-cy;
+  const f=RADAR.frames[RADAR.idx];
+  let imgs='';
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    imgs+=`<img src="${RADAR.host}${f.path}/256/${z}/${cx+dx}/${cy+dy}/4/1_1.png" alt="">`;
+  }
+  const mx=256+fracX*256, my=256+fracY*256;
+  const mPerPx=156543.03392*Math.cos(SEL.lat*Math.PI/180)/Math.pow(2,z), pxPerMile=1609.344/mPerPx;
+  const r25=25*pxPerMile, r50=50*pxPerMile;
+  const svg=`<svg viewBox="0 0 768 768">
+    <circle cx="${mx}" cy="${my}" r="${r25}" fill="none" stroke="#eef4ee" stroke-opacity=".38" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <circle cx="${mx}" cy="${my}" r="${r50}" fill="none" stroke="#eef4ee" stroke-opacity=".22" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <circle cx="${mx}" cy="${my}" r="6.5" fill="#79b7d8" stroke="#fff" stroke-width="2"/>
+    <text x="384" y="20" fill="#eef4ee" fill-opacity=".55" font-size="15" text-anchor="middle" font-family="Barlow">N</text></svg>`;
+  wrap.innerHTML=`<div class="rgrid">${imgs}</div>${svg}`;
+  const d=new Date(f.time*1000);
+  const lbl=f.nowcast?('nowcast +'+Math.max(0,Math.round((f.time*1000-Date.now())/60000))+' min')
+    :fmtClock(d.getHours()*60+d.getMinutes());
+  document.getElementById('radarTime').textContent=lbl;
 }
 
 /* ================= county (FCC Area API, free) — for future per-state notes ================= */
@@ -1171,6 +1355,7 @@ document.getElementById('saveSpot').onclick=()=>{
   SPOTS.push({name:name.slice(0,24),lat:SEL.lat,lon:SEL.lon});jset('hw_fields',SPOTS);renderSpots();
 };
 document.getElementById('editSpots').onclick=()=>{SPOTEDIT=!SPOTEDIT;renderSpots();};
+document.getElementById('compareBtn').onclick=compareFields;
 
 // snapshot the forecast at the moment of logging a cut, so outcomes can be scored against it later
 function snapshotCtx(D){
@@ -1256,6 +1441,19 @@ document.getElementById('themeBtn').onclick=()=>{THEME=THEME==='light'?'dark':'l
 /* ================= units ================= */
 document.getElementById('unitBtn').textContent=UNITS==='metric'?'Metric':'US';
 document.getElementById('unitBtn').onclick=()=>{UNITS=UNITS==='metric'?'US':'metric';jset('hw_units',UNITS);renderAll();};
+
+/* ================= radar controls ================= */
+(function(){
+  const panel=document.getElementById('radarPanel');
+  panel.addEventListener('toggle',function(){if(this.open&&!RADAR.loaded)loadRadar();});
+  const stepTo=i=>{RADAR.idx=(i+RADAR.frames.length)%RADAR.frames.length;renderRadarFrame();};
+  document.getElementById('radarPrev').onclick=()=>stepTo(RADAR.idx-1);
+  document.getElementById('radarNext').onclick=()=>stepTo(RADAR.idx+1);
+  document.getElementById('radarPlay').onclick=function(){
+    RADAR.playing=!RADAR.playing;this.textContent=RADAR.playing?'⏸ Pause':'▶ Play';
+    if(RADAR.playing)RADAR.timer=setInterval(()=>stepTo(RADAR.idx+1),600);else clearInterval(RADAR.timer);
+  };
+})();
 
 /* ================= why + share ================= */
 document.getElementById('whyBtn').onclick=()=>{WHYOPEN=!WHYOPEN;renderHero();};
