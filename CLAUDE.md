@@ -177,10 +177,11 @@ reasonable future refinement.
 ```
 
 Log stays one tap; every field after the snapshot is optional. `normalizeLog()` upgrades old records on
-load/import. **The outcome + actualDryDays are the gold** — logging "rained_on" vs "baled_dry" against
-the forecast snapshot is what lets the model learn. `computeLearn()` nudges dry-down by the mean
-(actual − predicted) once ≥3 outcomes carry `actualDryDays` (bounded ±1.5 d). `calibration()` reports
-how cuts turned out, bucketed by the score at cut time, for the honest-limits readout.
+load/import. **The score is NOT informed by the log** (deliberate divergence from BiteWatch — owner
+call): hay dry-down is weather/physics driven, so the forecast is the honest signal and auto-biasing it
+from a handful of logged cuts would add noise. The log is a record + `calibration()` (how your calls
+panned out, bucketed by the score at cut time — the honest-limits readout) + the seed for a future
+shared per-field dataset. There is intentionally no `computeLearn`/score-feedback path.
 
 ## Storage
 
@@ -191,7 +192,26 @@ how cuts turned out, bucketed by the score at cut time, for the honest-limits re
 
 Location-first by owner request (per-field weather is the priority in this app): **Field / location →
 What you're making (crop / making / equipment) → best-day bar → today's call → 14-day outlook → plan →
-drying-power chart → conditions → cutting log**.
+drying-power chart → forecast models → conditions → cutting log → How it works (FAQ)**.
+
+## Forecast models panel + FAQ
+
+- **Forecast models panel** (`renderModels`): for the SELECTED cut window, shows each model's total rain
+  (from `MODELDAY[date].per[id]`) with a dry/wet dot — "shows what they show" so the user can cross-check
+  sources the way they would toggle between apps manually. Intro line states agreement; **confidence is
+  throttled by model count** (`modelFactor = min(1, avgCount/3)`) so far-out days where only 1–2 models
+  reach never read as "High". Same `modelFactor` now applies to the hero confidence in `scoreCut`.
+- **How it works (FAQ)**: native `<details>`/`<summary>` accordion (no JS), `.faq` styles. Covers score,
+  the weather models (incl. the note that consumer apps repackage the same government models), ET₀,
+  dry-down/conditioning, dew+rain timing, baleage, "does the log change the score? no", privacy/offline.
+
+## Footer / privacy
+
+The public footer disclaimer says "HayWatch is not responsible…" — the **LLC name is intentionally kept
+out of public-facing text** (home-address-tied). NOTE: this repo deploys as static files, so dev docs
+here (incl. the Woods Market LLC entity line above) are served publicly too, e.g.
+`haywatch.pages.dev/CLAUDE.md`. If that matters, add an `.assetsignore` (`*.md`) — but Pages serves .md
+by default and the owner accepts this on BiteWatch, so it's left as-is unless the owner says otherwise.
 
 ## Roadmap
 

@@ -203,6 +203,27 @@
   .safety{background:var(--del-bg);border:1px solid var(--del-line);border-radius:12px;padding:12px 14px;
     font-size:13px;line-height:1.45;color:var(--del-ink);margin-bottom:12px}
   .safety b{color:var(--del-ink)}
+  .mnote{font-size:13px;color:var(--mut);line-height:1.45;margin-bottom:10px}
+  .mnote b{color:var(--ink)}
+  .mrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+  .mrow:first-child{border-top:0}
+  .mrow .mdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .mrow .mname{font-weight:600;flex:1}
+  .mrow .mname span{display:block;font-size:11.5px;color:var(--mut);font-weight:400}
+  .mrow .mval{font-family:"Barlow Semi Condensed";font-weight:600;font-size:15px;white-space:nowrap;text-align:right}
+  .mrow .mval span{display:block;font-size:11.5px;color:var(--mut);font-weight:500}
+
+  .faq details{border-top:1px solid var(--line)}
+  .faq details:first-of-type{border-top:0}
+  .faq summary{cursor:pointer;padding:12px 2px;font-weight:600;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:9px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::before{content:'+';color:var(--amber);font-weight:700;font-size:18px;line-height:1;width:14px;flex:0 0 auto;text-align:center}
+  .faq details[open] summary::before{content:'−'}
+  .faq .fbody{font-size:13.5px;color:var(--mut);line-height:1.55;padding:0 2px 13px 23px}
+  .faq .fbody b{color:var(--ink)}
+  .faq .fbody ul{margin:7px 0 0;padding-left:16px}
+  .faq .fbody li{margin:4px 0}
+  .faq .fbody a{color:var(--sky)}
   .foot{font-size:11.5px;color:var(--mut);line-height:1.45;margin:14px 4px 0}
   .foot b{color:var(--ink)}
   .tipwrap{text-align:center;margin:16px 0 2px}
@@ -310,6 +331,12 @@
   </section>
 
   <section class="panel">
+    <h2>Forecast models <span class="sub" id="modelSub"></span></h2>
+    <div class="mnote" id="modelIntro"></div>
+    <div id="modelList"></div>
+  </section>
+
+  <section class="panel">
     <h2>Conditions today <button class="unitbtn" id="unitBtn" aria-label="Toggle units">US</button></h2>
     <div class="grid">
       <div class="cell"><div class="k">Air temp</div><div class="v" id="cAir">—</div></div>
@@ -362,6 +389,87 @@
     <div class="note" id="storeNote"></div>
   </section>
 
+  <section class="panel faq">
+    <h2>How it works <span class="sub">tap to expand</span></h2>
+
+    <details>
+      <summary>What is the “cut score”?</summary>
+      <div class="fbody">Each day gets a 0–100 score for cutting <b>that</b> day, judged by the drying
+      window that follows it — how much drying power the weather gives you before rain, dew, and time run
+      out. It rolls up to a plain call: <b>Prime cut</b> (72+), <b>Good</b> (52+), <b>Marginal</b> (34+),
+      or <b>Don’t cut</b>. Rain in the window is the heaviest penalty and it gets worse the drier the hay
+      is — rain on nearly-cured hay leaches quality worst. Tap <b>“Why this call?”</b> on the forecast to
+      see the exact breakdown.</div>
+    </details>
+
+    <details>
+      <summary>What are the weather models, and why several?</summary>
+      <div class="fbody">Instead of trusting one forecast, HayWatch pulls rain forecasts from several
+      national weather services and checks whether they <b>agree</b>:
+      <ul>
+        <li><b>ECMWF</b> — European Centre (widely rated the most accurate global model; ~7-day range here)</li>
+        <li><b>GFS</b> — US NOAA (its near-term blend includes the 3&nbsp;km HRRR model)</li>
+        <li><b>ICON</b> — German Weather Service (DWD)</li>
+        <li><b>GEM</b> — Environment Canada</li>
+        <li><b>Météo-France</b> — the French national model</li>
+      </ul>
+      When they all see rain in your window, that’s <b>High</b> confidence — wait. When they split, it’s
+      <b>Low</b> confidence — the forecast isn’t settled, so don’t bet the crop on it. The
+      <b>Forecast models</b> panel shows what each one says for your window. (Most consumer weather apps
+      are proprietary blends built on these same government models — HayWatch just shows the sources and
+      their spread directly.)</div>
+    </details>
+
+    <details>
+      <summary>“Drying power” (ET₀) — what is that number?</summary>
+      <div class="fbody">Reference evapotranspiration (ET₀) is one number that folds sun, heat, wind and
+      dryness into how fast the air pulls moisture out of the swath. More ET₀ = faster, safer cure. It’s
+      the honest “drying” signal behind the predicted dry-down days. Weak ≈ under 3&nbsp;mm/day, Strong ≈
+      5&nbsp;mm+/day in this region.</div>
+    </details>
+
+    <details>
+      <summary>Dry-down days, crop & cutting equipment</summary>
+      <div class="fbody">Predicted dry-down is the calendar days from cut to baling moisture, from the
+      drying power over your window. It’s tuned to this region: conditioned grass runs ~2 days on a good
+      stretch, 3 mediocre, 4 with heavy dew. Thick-stemmed legumes (alfalfa, clover) dry slower. A
+      <b>mower-conditioner</b> (crimped/rolled) saves about a day on legumes and a little on grass — pick
+      your equipment so the estimate matches your setup.</div>
+    </details>
+
+    <details>
+      <summary>Dew burn-off & rain timing</summary>
+      <div class="fbody">The plan shows each day’s <b>dew-off</b> (morning, when the swath is workable) and
+      <b>dew-set</b> (evening, stop baling) — plus days when dew lingers and nothing dries. When rain is
+      coming, it shows <b>when</b> it arrives (“rain from ~2&nbsp;PM”), so you know your deadline to get
+      off the field, not just which day it’ll rain.</div>
+    </details>
+
+    <details>
+      <summary>Baleage vs dry hay</summary>
+      <div class="fbody">Baleage/haylage is wilted ~a day to 45–55% moisture, then wrapped wet — far more
+      rain-tolerant than dry hay, which needs the full clear stretch down to ~16–18%. If the forecast
+      won’t give you a dry-hay window, baleage is often the salvage path. Pick it under <b>Making</b>.</div>
+    </details>
+
+    <details>
+      <summary>Does my cutting log change the score?</summary>
+      <div class="fbody"><b>No.</b> Hay dry-down is weather-driven, so the score comes purely from the
+      forecast and the crop/equipment presets. The log is your record — it tracks how the forecast
+      actually held up on your fields (the calibration readout), and it’s the seed for a future shared
+      per-field dataset. It never quietly moves the number.</div>
+    </details>
+
+    <details>
+      <summary>Privacy, offline & accuracy</summary>
+      <div class="fbody">Everything runs in your browser. Your fields, coordinates and log stay on your
+      device — nothing is sent to a server. It installs and works offline (last-loaded forecast). All
+      data comes from free public sources (Open-Meteo, incl. the national models above). The scoring
+      weights are informed starting points, <b>not</b> validated science — always confirm bale moisture
+      with a probe, and treat this as a planning aid, not a guarantee.</div>
+    </details>
+  </section>
+
   <div class="tipwrap" id="tipWrap" style="display:none">
     <a class="tipbtn" id="tipBtn" target="_blank" rel="noopener">☕ Support HayWatch</a>
   </div>
@@ -377,9 +485,9 @@
     evapotranspiration (drying power), humidity and overnight dew, and rain risk cross-checked across
     several global weather models. Model agreement is your confidence; disagreement means wait.
     <b>This is a planning aid, not a guarantee.</b> Forecasts are wrong sometimes, and only you can judge
-    your fields, equipment, and hay. <b>Woods Market LLC / HayWatch is not responsible for any crop loss,
-    spoilage, equipment, property, or other damages arising from decisions made with this app.</b> Use
-    your own judgment — the weather gets the final say.
+    your fields, equipment, and hay. <b>HayWatch is not responsible for any crop loss, spoilage,
+    equipment, property, or other damages arising from decisions made with this app.</b> Use your own
+    judgment — the weather gets the final say.
   </div>
 </div>
 
@@ -478,16 +586,10 @@ function normalizeLog(arr){
 }
 let LOG=normalizeLog(jget('hw_log',[]));
 
-// Light learning: once ≥3 logged cuts carry an actualDryDays, nudge the drying requirement toward what
-// your fields really do (bounded). Honest-limits framing preserved — small effect, calibration only.
-function computeLearn(log){
-  const rec=(log||[]).filter(e=>e.actualDryDays!=null && e.ctx && e.ctx.predictedDryDays!=null);
-  if(rec.length<3)return {bias:0,n:rec.length};
-  const diffs=rec.map(e=>e.actualDryDays-e.ctx.predictedDryDays);
-  const mean=diffs.reduce((s,d)=>s+d,0)/diffs.length;
-  return {bias:Math.max(-1.5,Math.min(1.5,mean)),n:rec.length};   // days the model tends to be off by
-}
-let LEARN=computeLearn(LOG);
+// NOTE: unlike BiteWatch, the HayWatch score is NOT nudged by the log. Hay dry-down is weather/physics
+// driven, so the forecast (ET₀ + rain across models) is the honest signal; auto-biasing it from a
+// handful of logged cuts would add noise, not accuracy. The log is a record + the calibration readout
+// below (how your calls actually panned out) + the future shared-dataset path — it does not move the score.
 // Calibration readout: how logged cuts actually turned out, bucketed by the score at cut time.
 function calibration(log){
   const band=s=>s>=72?'Prime':s>=52?'Good':s>=34?'Marginal':'Don’t cut';
@@ -535,7 +637,6 @@ function predictDryDays(D){
 function scoreCut(D){
   const mk=MAKING[PRODUCT], pd=predictDryDays(D);
   let pdd=pd.enough?pd.days:MAKING[PRODUCT].maxDays+3;
-  if(LEARN.bias)pdd=Math.max(1,pdd+LEARN.bias);   // nudge by what your fields actually do
   const parts=[];
 
   // --- drying power base: surplus/deficit of ET0 available over the ideal window vs what's needed ---
@@ -582,10 +683,13 @@ function scoreCut(D){
   score=Math.max(0,Math.min(100,score));
 
   // --- forecast confidence from model agreement across the window ---
-  let unan=0,uc=0,modelsSeen=0;
-  for(let j=D;j<=winEnd;j++){const dd=DAYS[j];if(dd&&dd.rainCount!=null){const fr=dd.rainFrac;unan+=Math.abs(fr-0.5)*2;uc++;modelsSeen=Math.max(modelsSeen,dd.rainCount);}}
+  // Needs BOTH: the models must agree AND there must be enough of them (far-out days only a couple of
+  // models reach, which is a weak cross-check — never call that "High" no matter how "unanimous").
+  let unan=0,uc=0,cntSum=0,modelsSeen=0;
+  for(let j=D;j<=winEnd;j++){const dd=DAYS[j];if(dd&&dd.rainCount!=null){const fr=dd.rainFrac;unan+=Math.abs(fr-0.5)*2;uc++;cntSum+=dd.rainCount;modelsSeen=Math.max(modelsSeen,dd.rainCount);}}
   const agreeScore=uc?unan/uc:0, horizonDecay=Math.max(0,1-D/12);
-  const confVal=agreeScore*0.7+horizonDecay*0.3;
+  const avgCount=uc?cntSum/uc:0, modelFactor=Math.min(1,avgCount/3);   // <3 models ⇒ throttle confidence
+  const confVal=(agreeScore*0.7+horizonDecay*0.3)*modelFactor;
   const confidence=confVal>=0.62?'High':confVal>=0.4?'Medium':'Low';
 
   return {D,score,tier:tierOf(score),pdd,pddEnough:pd.enough,base,rainPen,rainWindow,rainProbMax,
@@ -675,7 +779,7 @@ function renderProduct(){
   csd.value=CONDITIONED?'cond':'plain';
   csd.onchange=()=>{CONDITIONED=csd.value==='cond';jset('hw_cond',CONDITIONED);renderAll();};
   const mk=MAKING[PRODUCT],cr=CROPS[CROP];
-  document.getElementById('prodSub').textContent=mk.wet?'forgiving — wilt & wrap':'needs a clear stretch';
+  document.getElementById('prodSub').textContent='';
   const condNote=CONDITIONED
     ? (cr.condBenefit>=0.2?` Crimping cuts drying roughly a day on ${cr.name.toLowerCase()}'s thick stems.`
        :cr.condBenefit>=0.12?` Crimping shaves some drying time.`
@@ -791,6 +895,36 @@ function renderChart(){
   DAYS.forEach((d,i)=>{if(i%2===0)svg+=`<text x="${xf(i)+cw/2}" y="${H-4}" fill="var(--mut)" font-size="9" font-family="Barlow" text-anchor="middle">${i===0?'now':dayShort(i)}</text>`;});
   el.innerHTML=svg+`</svg>`;
 }
+// Per-model rain for the SELECTED cut window — "shows what they show" so you can cross-check sources.
+function renderModels(){
+  const list=document.getElementById('modelList'),intro=document.getElementById('modelIntro');
+  const sub=document.getElementById('modelSub');
+  if(!DAYS.length){list.innerHTML='';intro.textContent='';sub.textContent='';return;}
+  if(!MODELDAY){list.innerHTML='';intro.textContent='Model comparison did not load (needs signal). The score still runs on the main forecast.';sub.textContent='';return;}
+  const r=scoreCut(SEL.dayIdx);
+  const winDates=[];for(let j=r.D;j<=r.winEnd;j++){if(DAYS[j])winDates.push(DAYS[j].date);}
+  const rows=MODELS.map(m=>{
+    let sum=0,have=0;
+    winDates.forEach(dt=>{const md=MODELDAY[dt];if(md&&md.per&&md.per[m.id]!=null){have++;sum+=md.per[m.id];}});
+    return {name:m.name,id:m.id,sum,have,wet:sum>=2};
+  }).filter(x=>x.have>0).sort((a,b)=>a.sum-b.sum);
+  const wet=rows.filter(x=>x.wet).length, n=rows.length;
+  sub.textContent=n?`${wet}/${n} see rain`:'';
+  const winLabel=winDates.length>1?`${dayShort(r.D)}–${dayShort(r.winEnd)}`:dayShort(r.D);
+  const few=n>0&&n<3;   // far-out days: only a model or two reach — weak cross-check
+  intro.innerHTML=`For your <b>${winLabel}</b> drying window, here's each model's total rain. `+
+    (n===0?`No model data reaches this far out yet — the score falls back to the main forecast.`
+      :few?`Only <b>${n} model${n===1?'':'s'}</b> ${n===1?'reaches':'reach'} this far out — limited cross-check, so treat it as <b>low confidence</b> until nearer days fill in.`
+      :wet===0?`<b>All ${n} agree it stays dry</b> — strong agreement.`
+      :wet===n?`<b>All ${n} agree on rain</b> — strong agreement it's wet.`
+      :`<b>${wet} of ${n} see rain</b> — the models disagree, so the forecast isn't settled. When they split, wait.`);
+  list.innerHTML=rows.map(x=>{
+    const col=x.wet?'var(--danger)':'var(--good)';
+    return `<div class="mrow"><span class="mdot" style="background:${col}"></span>
+      <div class="mname">${x.name}<span>${x.wet?'sees rain':'stays dry'}</span></div>
+      <div class="mval" style="color:${col}">${valOf(rainStr(x.sum))}<span>${rainUnit()}${x.have<winDates.length?' · partial':''}</span></div></div>`;
+  }).join('');
+}
 function renderConditions(){
   const el=id=>document.getElementById(id);
   if(!DAYS.length||!HOURLY){el('wxNote').textContent='Live weather did not load yet.';return;}
@@ -832,12 +966,11 @@ function renderLog(){
   const learnEl=document.getElementById('learn');
   const withOutcome=LOG.filter(e=>e.outcome).length;
   if(LOG.length<3){
-    learnEl.innerHTML=`<b>${LOG.length}</b> cut${LOG.length===1?'':'s'} logged. After a cut is baled, tap it and set the <b>outcome</b>. With a few outcomes the model starts calibrating dry-down to your fields.`;
+    learnEl.innerHTML=`<b>${LOG.length}</b> cut${LOG.length===1?'':'s'} logged. After a cut is baled, tap it and set the <b>outcome</b> — HayWatch tracks how the forecast actually held up on your fields. (It records your calls; it doesn't auto-adjust the score.)`;
   }else{
-    const cal=calibration(LOG),L=computeLearn(LOG);
-    const calLine=cal.length?`Turned out well by call: <b>${cal.map(c=>c.band+' '+c.good+'/'+c.n).join(' · ')}</b>. `:'';
-    const biasLine=L.n>=3?`Your fields run <b>${L.bias>=0?'+':''}${L.bias.toFixed(1)}d</b> vs predicted (${L.n} outcomes) — score adjusted.`:'';
-    learnEl.innerHTML=`<b>${LOG.length}</b> cuts · <b>${withOutcome}</b> with outcomes. ${calLine}${biasLine}`;
+    const cal=calibration(LOG);
+    const calLine=cal.length?`How your calls panned out: <b>${cal.map(c=>c.band+' '+c.good+'/'+c.n).join(' · ')}</b> turned out well. `:'';
+    learnEl.innerHTML=`<b>${LOG.length}</b> cuts · <b>${withOutcome}</b> with outcomes. ${calLine}`;
   }
   const list=document.getElementById('logList');list.innerHTML='';
   LOG.slice().reverse().slice(0,6).forEach(e=>{
@@ -859,8 +992,7 @@ function renderLog(){
   document.getElementById('storeNote').textContent=Store.persistent?'':'Storage is blocked here, so the log and fields reset on reload. They persist once installed or hosted on your own site.';
 }
 function renderAll(){
-  LEARN=computeLearn(LOG);
-  renderProduct();renderBest();renderHero();renderDays();renderPlan();renderChart();renderConditions();renderSpots();renderLog();
+  renderProduct();renderBest();renderHero();renderDays();renderPlan();renderChart();renderModels();renderConditions();renderSpots();renderLog();
 }
 
 /* ================= build day aggregates ================= */
@@ -959,13 +1091,14 @@ async function loadModels(){
     });
     const avail=Object.keys(perModel);if(!avail.length)throw 0;
     const dates={};
-    avail.forEach(id=>{Object.keys(perModel[id]).forEach(dt=>{dates[dt]=dates[dt]||{count:0,wet:0};});});
+    avail.forEach(id=>{Object.keys(perModel[id]).forEach(dt=>{dates[dt]=dates[dt]||true;});});
+    const out={};
     Object.keys(dates).forEach(dt=>{
-      let count=0,wet=0;
-      avail.forEach(id=>{const v=perModel[id][dt];if(v==null)return;count++;if(v>=2)wet++;});
-      dates[dt]={count,frac:count?wet/count:0};
+      let count=0,wet=0;const per={};
+      avail.forEach(id=>{const v=perModel[id][dt];if(v==null)return;count++;per[id]=v;if(v>=2)wet++;});
+      out[dt]={count,frac:count?wet/count:0,per};   // per = each model's daily precip (mm) for this date
     });
-    MODELDAY=dates;
+    MODELDAY=out;
   }catch(e){MODELDAY=null;}
 }
 

@@ -39,8 +39,8 @@ spontaneously combust — a real barn-fire risk. **Always confirm bale moisture 
 storing.** HayWatch reads the weather forecast; it does not measure your hay.
 
 HayWatch is a **planning aid, not a guarantee.** Forecasts are wrong sometimes, and only you can judge
-your fields, equipment, and hay. **Woods Market LLC / HayWatch is not responsible for any crop loss,
-spoilage, equipment, property, or other damages arising from decisions made with this app.** Use your
+your fields, equipment, and hay. **HayWatch is not responsible for any crop loss, spoilage, equipment,
+property, or other damages arising from decisions made with this app.** Use your
 own judgment — the weather gets the final say.
 
 ## Run locally
