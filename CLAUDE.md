@@ -222,11 +222,29 @@ by default and the owner accepts this on BiteWatch, so it's left as-is unless th
 2. Tip button URL (`TIP_URL` const at top of `<script>`, empty = hidden) — platform owner's choice.
 3. ✅ Real HayWatch icon art (sun + round hay bale + grass on the dark-green gradient); source in
    `haywatch_icon.svg`.
-4. Optional refinements: add HRRR (3 km) explicitly to the near-term rain agreement and weight it for
-   the 0–2 day window; add a wide-swath drying factor (extension: wide swath > conditioning for fast
-   dry-down); wire dew-off→set window into `effEt0`; add `soil_moisture_0_to_7cm`; a
-   cut/ted/rake/bale step tracker per active cut; push/rain-on-cut alerts.
-5. v2 (deliberate, breaks no-server): shared per-field outcomes → a real dry-down dataset (same moat
+4. **Scattered vs widespread rain classification** (owner-requested). A "40% chance" is PoP =
+   confidence × areal coverage — in convective season it usually means "scattered, ~40% of the area gets
+   hit" (one town soaked, the next dry: the classic DeKalb-dry / Gouverneur-wet split), NOT "40% chance
+   your field gets rained on." Classify each rain day as **widespread/frontal** (models agree, meaningful
+   amounts → trust it, county-wide) vs **scattered/airmass** (models disagree, low amounts, hot humid
+   afternoon, "showers" weather codes → hit-or-miss, your field may dodge it). Label it on the day/plan so
+   the user knows whether a PoP is the trustworthy kind or the gamble kind. Highest value / lowest effort
+   of this group — derivable from data already fetched (model spread + amount + convective signals).
+5. **"Your fields — live & near-term" dashboard** (owner-requested). Three layers: (a) all pinned Fields
+   side by side with next-3-day score + rain risk, so nearby fields' differences show at a glance;
+   (b) higher-res near-term per field — **NWS `api.weather.gov`** (US-only, ~2.5 km gridpoint hourly +
+   PoP + alerts; keyless, CORS-OK, tested working from the browser) or Open-Meteo `minutely_15`, where
+   sub-county rain differences actually start to resolve; (c) a live **RainViewer** radar loop centered
+   on the selected field (free, no key, CORS-OK — tested; `api.rainviewer.com/public/weather-maps.json`
+   gives ~2 h past frames + short nowcast frames; DISPLAY the loop, don't pixel-sample — reading tile
+   pixels is CORS-dicey). Caveat: radar nowcast only reaches ~0–60 min, so this is a same-day
+   "keep-baling-or-not" mode, distinct from the multi-day planner. Pairs with #4 (the scattered label is
+   the interpreter). All keyless/no-backend — fits the constraints.
+6. Other refinements: add HRRR (3 km) explicitly to the near-term rain agreement, weighted for the 0–2
+   day window; add a wide-swath drying factor (extension: wide swath > conditioning for fast dry-down);
+   wire dew-off→set window into `effEt0`; add `soil_moisture_0_to_7cm`; a cut/ted/rake/bale step tracker
+   per active cut; push/rain-on-cut alerts.
+7. v2 (deliberate, breaks no-server): shared per-field outcomes → a real dry-down dataset (same moat
    logic as BiteWatch). Cloudflare Worker + D1. Fuzz coords on the shared record.
 
 ## Known rough edges
