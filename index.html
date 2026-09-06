@@ -1258,7 +1258,7 @@ async function loadRadar(){
     if(!RADAR.frames.length)throw 0;
     RADAR.idx=Math.max(0,past.length-1);   // latest observed frame
     RADAR.loaded=true;
-    document.getElementById('radarNote').innerHTML='Rain over the map, centered on your field — ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.<br><span style="opacity:.7">Radar © RainViewer · Map © OpenStreetMap, © CARTO</span>';
+    document.getElementById('radarNote').innerHTML='Rain over the map, centered on your field — ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.<br><span style="opacity:.7">Radar © RainViewer · Map © Esri</span>';
     ctrls.style.display='flex';
     renderRadarFrame();
   }catch(e){if(hint)hint.textContent='Radar did not load (needs signal). Try again shortly.';}
@@ -1270,11 +1270,11 @@ function renderRadarFrame(){
   const cx=Math.floor(fx), cy=Math.floor(fy), fracX=fx-cx, fracY=fy-cy;
   const f=RADAR.frames[RADAR.idx];
   let base='',radar='';
-  const subs='abcd';
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-    const tx=cx+dx, ty=cy+dy, s=subs[(Math.abs(tx)+Math.abs(ty))%4];
-    // dark base map (Carto, keyless) UNDER the radar so precip shows over real geography
-    base+=`<img src="https://${s}.basemaps.cartocdn.com/dark_all/${z}/${tx}/${ty}@2x.png" alt="">`;
+    const tx=cx+dx, ty=cy+dy;
+    // dark base map (ESRI Dark Gray Canvas, keyless) UNDER the radar so precip shows over real geography.
+    // Note ESRI tile order is /{z}/{y}/{x} (row then col), no key, no subdomains.
+    base+=`<img src="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${z}/${ty}/${tx}" alt="">`;
     // radar (RainViewer) — transparent where no precip, so the base map shows through
     radar+=`<img src="${RADAR.host}${f.path}/256/${z}/${tx}/${ty}/4/1_1.png" alt="">`;
   }

@@ -235,9 +235,13 @@ by default and the owner accepts this on BiteWatch, so it's left as-is unless th
    placeholder tile, which was a bug)**, then CSS-cropped/scaled to a ~200 mi view centered on the field
    (`RADAR.span`); dark ground (precip only), SVG overlay (0–100 box) with the field marker + 25/50/100 mi
    range rings, frame scrubber + play across ~2 h past (+ nowcast frames when present). Radar sits over a
-   **Carto dark base map** (`{a-d}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png` — keyless, CORS-OK)
-   at the same z=7 tile grid, so precip shows over real geography; two stacked `.rgrid` layers (base under
-   radar, both same crop transform) + the SVG overlay. Attribution in the note (RainViewer / OSM / CARTO).
+   **dark base map at the same z=7 tile grid** so precip shows over real geography; two stacked `.rgrid`
+   layers (base under radar, same crop transform) + the SVG overlay. Base map is **ESRI Dark Gray Canvas**
+   (`server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`
+   — keyless, CORS-OK, note the `/{z}/{y}/{x}` row-then-col order). NOTE: **Carto's
+   `basemaps.cartocdn.com` now requires an API key** (returns an "API key required" placeholder tile) — do
+   not use it. Attribution in the note (Radar © RainViewer · Map © Esri). Verify any new tile source
+   actually renders (a placeholder loads as a valid image, so check pixels, not just `naturalWidth`).
    `RADAR` state; `loadRadar`/`renderRadarFrame`; re-centers on field change if open. DISPLAY only — no
    pixel-sampling (CORS-dicey). Radar nowcast reaches ~0–60 min = same-day "keep-baling" mode, not
    planning. (b) **Compare my fields** — button in the Fields panel, shown only with ≥2 pinned fields;
