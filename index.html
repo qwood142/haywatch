@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* dark (default) — field green + hay gold */
+    /* dark (default) - field green + hay gold */
     --water:#0e1c14;--card:#16281d;--card2:#1b3125;--line:#274a35;
     --ink:#eef4ee;--mut:#8fae98;--amber:#e8b23a;--moon:#cdd9df;--good:#4bbf7a;--sky:#79b7d8;
     --inset:#132419;--card-hi:#1f3a2b;--on-accent:#1a1204;--night:#08150e;--fair:#a9c9b2;
@@ -304,21 +304,21 @@
   </section>
 
   <div class="bestbar" id="bestBar" style="display:none">
-    <span class="bt" id="bestTxt">—</span>
+    <span class="bt" id="bestTxt">-</span>
     <span class="arrow">tap to view →</span>
   </div>
 
   <section class="panel">
     <div class="rating">
-      <div class="rword"><small id="dayLabel">Today</small><span id="rword">—</span></div>
-      <div class="score">cut score<br><b id="scoreNum">—</b>/100</div>
+      <div class="rword"><small id="dayLabel">Today</small><span id="rword">-</span></div>
+      <div class="score">cut score<br><b id="scoreNum">-</b>/100</div>
     </div>
     <div class="meter"><i id="meterFill" style="width:0%"></i></div>
     <div class="reason"><span id="reasonMain">Reading the forecasts…</span> <span class="why" id="reasonWhy"></span></div>
     <div class="metrrow">
-      <div class="metr"><div class="k">Dry-down</div><div class="v" id="mDry">—</div></div>
-      <div class="metr"><div class="k">Rain in window</div><div class="v" id="mRain">—</div></div>
-      <div class="metr"><div class="k">Model agree</div><div class="v" id="mConf">—</div></div>
+      <div class="metr"><div class="k">Dry-down</div><div class="v" id="mDry">-</div></div>
+      <div class="metr"><div class="k">Rain in window</div><div class="v" id="mRain">-</div></div>
+      <div class="metr"><div class="k">Model agree</div><div class="v" id="mConf">-</div></div>
     </div>
     <div class="herobtns">
       <button class="linkbtn" id="whyBtn">Why this call?</button>
@@ -363,7 +363,7 @@
         <div class="radarwrap" id="radarWrap"><div class="radarhint" id="radarHint">Loading radar…</div></div>
         <div class="radarctrls" id="radarCtrls" style="display:none">
           <button id="radarPrev">◀</button>
-          <span id="radarTime">—</span>
+          <span id="radarTime">-</span>
           <button id="radarNext">▶</button>
           <button id="radarPlay">▶ Play</button>
         </div>
@@ -375,12 +375,12 @@
   <section class="panel">
     <h2>Conditions today <button class="unitbtn" id="unitBtn" aria-label="Toggle units">US</button></h2>
     <div class="grid">
-      <div class="cell"><div class="k">Air temp</div><div class="v" id="cAir">—</div></div>
-      <div class="cell"><div class="k">Humidity</div><div class="v" id="cRH">—</div></div>
-      <div class="cell"><div class="k">Dew point</div><div class="v" id="cDew">—</div></div>
-      <div class="cell"><div class="k">Wind</div><div class="v" id="cWind">—</div></div>
-      <div class="cell"><div class="k">Drying power</div><div class="v" id="cEt0">—</div></div>
-      <div class="cell"><div class="k">Rain today</div><div class="v" id="cRain">—</div></div>
+      <div class="cell"><div class="k">Air temp</div><div class="v" id="cAir">-</div></div>
+      <div class="cell"><div class="k">Humidity</div><div class="v" id="cRH">-</div></div>
+      <div class="cell"><div class="k">Dew point</div><div class="v" id="cDew">-</div></div>
+      <div class="cell"><div class="k">Wind</div><div class="v" id="cWind">-</div></div>
+      <div class="cell"><div class="k">Drying power</div><div class="v" id="cEt0">-</div></div>
+      <div class="cell"><div class="k">Rain today</div><div class="v" id="cRain">-</div></div>
     </div>
     <div class="note" id="wxNote"></div>
   </section>
@@ -397,7 +397,7 @@
     </div>
 
     <div class="editor" id="editor">
-      <div class="hint">Logged a cut on <b id="edWhen">today</b>. Add detail any time — all optional. Come back and set the <b>outcome</b> once it's baled; that's what teaches the model your fields.</div>
+      <div class="hint">Logged a cut on <b id="edWhen">today</b>. Add detail any time - all optional. Come back and set the <b>outcome</b> once it's baled; that's what teaches the model your fields.</div>
       <div class="erow">
         <div class="efield wide"><label>How it turned out</label>
           <div class="chips" id="edOutcome">
@@ -409,8 +409,8 @@
         </div>
       </div>
       <div class="erow">
-        <div class="efield"><label>Actual dry days</label><input id="edDryDays" inputmode="decimal" placeholder="—"></div>
-        <div class="efield"><label>Moisture at bale %</label><input id="edMoist" inputmode="decimal" placeholder="—"></div>
+        <div class="efield"><label>Actual dry days</label><input id="edDryDays" inputmode="decimal" placeholder="-"></div>
+        <div class="efield"><label>Moisture at bale %</label><input id="edMoist" inputmode="decimal" placeholder="-"></div>
       </div>
       <div class="erow">
         <div class="efield wide"><label>Note</label><input id="edNote" placeholder="anything worth remembering"></div>
@@ -430,11 +430,11 @@
 
     <details>
       <summary>What is the “cut score”?</summary>
-      <div class="fbody">Each day gets a 0–100 score for cutting <b>that</b> day, judged by the drying
-      window that follows it — how much drying power the weather gives you before rain, dew, and time run
+      <div class="fbody">Each day gets a 0-100 score for cutting <b>that</b> day, judged by the drying
+      window that follows it - how much drying power the weather gives you before rain, dew, and time run
       out. It rolls up to a plain call: <b>Prime cut</b> (72+), <b>Good</b> (52+), <b>Marginal</b> (34+),
       or <b>Don’t cut</b>. Rain in the window is the heaviest penalty and it gets worse the drier the hay
-      is — rain on nearly-cured hay leaches quality worst. Tap <b>“Why this call?”</b> on the forecast to
+      is - rain on nearly-cured hay leaches quality worst. Tap <b>“Why this call?”</b> on the forecast to
       see the exact breakdown.</div>
     </details>
 
@@ -443,44 +443,44 @@
       <div class="fbody">Instead of trusting one forecast, HayWatch pulls rain forecasts from several
       national weather services and checks whether they <b>agree</b>:
       <ul>
-        <li><b>ECMWF</b> — European Centre (widely rated the most accurate global model; ~7-day range here)</li>
-        <li><b>GFS</b> — US NOAA (its near-term blend includes the 3&nbsp;km HRRR model)</li>
-        <li><b>ICON</b> — German Weather Service (DWD)</li>
-        <li><b>GEM</b> — Environment Canada</li>
-        <li><b>Météo-France</b> — the French national model</li>
+        <li><b>ECMWF</b> - European Centre (widely rated the most accurate global model; ~7-day range here)</li>
+        <li><b>GFS</b> - US NOAA (its near-term blend includes the 3&nbsp;km HRRR model)</li>
+        <li><b>ICON</b> - German Weather Service (DWD)</li>
+        <li><b>GEM</b> - Environment Canada</li>
+        <li><b>Météo-France</b> - the French national model</li>
       </ul>
-      When they all see rain in your window, that’s <b>High</b> confidence — wait. When they split, it’s
-      <b>Low</b> confidence — the forecast isn’t settled, so don’t bet the crop on it. The
+      When they all see rain in your window, that’s <b>High</b> confidence - wait. When they split, it’s
+      <b>Low</b> confidence - the forecast isn’t settled, so don’t bet the crop on it. The
       <b>Forecast models</b> panel shows what each one says for your window. (Most consumer weather apps
-      are proprietary blends built on these same government models — HayWatch just shows the sources and
+      are proprietary blends built on these same government models - HayWatch just shows the sources and
       their spread directly.)</div>
     </details>
 
     <details>
-      <summary>“40% chance of rain” — but does it hit MY field?</summary>
+      <summary>“40% chance of rain” - but does it hit MY field?</summary>
       <div class="fbody">A percentage is <b>coverage × confidence</b>, not "40% chance your field gets wet."
-      In summer it usually means <i>"showers will form and cover ~40% of the area"</i> — one town gets
+      In summer it usually means <i>"showers will form and cover ~40% of the area"</i> - one town gets
       soaked, the next stays dry. So HayWatch labels each rainy day:
       <ul>
-        <li><b>Widespread</b> — a real system, the models agree, meaningful totals. The whole county gets
+        <li><b>Widespread</b> - a real system, the models agree, meaningful totals. The whole county gets
         it; don't count on dodging it.</li>
-        <li><b>Scattered</b> — pop-up showers, models split, low totals, hot muggy afternoon. Hit-or-miss:
+        <li><b>Scattered</b> - pop-up showers, models split, low totals, hot muggy afternoon. Hit-or-miss:
         your field might dodge it, but it's a gamble.</li>
       </ul>
       For the scattered case there's no forecast on earth that can tell you days out whether your exact
-      field gets the cell — so on those days, watch the <b>radar</b> (below) the morning of.</div>
+      field gets the cell - so on those days, watch the <b>radar</b> (below) the morning of.</div>
     </details>
 
     <details>
       <summary>The radar panel</summary>
       <div class="fbody">Live precipitation radar centered on your field (free, from RainViewer), with
-      rings at 25 and 50 miles. Scrub or play the last ~2 hours to see which way cells are moving — that's
+      rings at 25 and 50 miles. Scrub or play the last ~2 hours to see which way cells are moving - that's
       your warning time on a scattered day. It only looks ~an hour ahead, so it's a <b>same-day,
       about-to-cut</b> tool, not for planning days out.</div>
     </details>
 
     <details>
-      <summary>“Drying power” (ET₀) — what is that number?</summary>
+      <summary>“Drying power” (ET₀) - what is that number?</summary>
       <div class="fbody">Reference evapotranspiration (ET₀) is one number that folds sun, heat, wind and
       dryness into how fast the air pulls moisture out of the swath. More ET₀ = faster, safer cure. It’s
       the honest “drying” signal behind the predicted dry-down days. Weak ≈ under 3&nbsp;mm/day, Strong ≈
@@ -492,39 +492,31 @@
       <div class="fbody">Predicted dry-down is the calendar days from cut to baling moisture, from the
       drying power over your window. It’s tuned to this region: conditioned grass runs ~2 days on a good
       stretch, 3 mediocre, 4 with heavy dew. Thick-stemmed legumes (alfalfa, clover) dry slower. A
-      <b>mower-conditioner</b> (crimped/rolled) saves about a day on legumes and a little on grass — pick
+      <b>mower-conditioner</b> (crimped/rolled) saves about a day on legumes and a little on grass - pick
       your equipment so the estimate matches your setup.</div>
     </details>
 
     <details>
       <summary>Dew burn-off & rain timing</summary>
       <div class="fbody">The plan shows each day’s <b>dew-off</b> (morning, when the swath is workable) and
-      <b>dew-set</b> (evening, stop baling) — plus days when dew lingers and nothing dries. When rain is
+      <b>dew-set</b> (evening, stop baling) - plus days when dew lingers and nothing dries. When rain is
       coming, it shows <b>when</b> it arrives (“rain from ~2&nbsp;PM”), so you know your deadline to get
       off the field, not just which day it’ll rain.</div>
     </details>
 
     <details>
       <summary>Baleage vs dry hay</summary>
-      <div class="fbody">Baleage/haylage is wilted ~a day to 45–55% moisture, then wrapped wet — far more
-      rain-tolerant than dry hay, which needs the full clear stretch down to ~16–18%. If the forecast
+      <div class="fbody">Baleage/haylage is wilted ~a day to 45-55% moisture, then wrapped wet - far more
+      rain-tolerant than dry hay, which needs the full clear stretch down to ~16-18%. If the forecast
       won’t give you a dry-hay window, baleage is often the salvage path. Pick it under <b>Making</b>.</div>
-    </details>
-
-    <details>
-      <summary>Does my cutting log change the score?</summary>
-      <div class="fbody"><b>No.</b> Hay dry-down is weather-driven, so the score comes purely from the
-      forecast and the crop/equipment presets. The log is your record — it tracks how the forecast
-      actually held up on your fields (the calibration readout), and it’s the seed for a future shared
-      per-field dataset. It never quietly moves the number.</div>
     </details>
 
     <details>
       <summary>Privacy, offline & accuracy</summary>
       <div class="fbody">Everything runs in your browser. Your fields, coordinates and log stay on your
-      device — nothing is sent to a server. It installs and works offline (last-loaded forecast). All
+      device - nothing is sent to a server. It installs and works offline (last-loaded forecast). All
       data comes from free public sources (Open-Meteo, incl. the national models above). The scoring
-      weights are informed starting points, <b>not</b> validated science — always confirm bale moisture
+      weights are informed starting points, <b>not</b> validated science - always confirm bale moisture
       with a probe, and treat this as a planning aid, not a guarantee.</div>
     </details>
   </section>
@@ -535,18 +527,18 @@
 
   <div class="safety">
     <b>⚠ Safety:</b> Never bale or stack hay above safe moisture. Wet hay heats in storage and can spoil,
-    mold, or spontaneously combust — a real barn-fire risk. Always confirm bale moisture with a probe
+    mold, or spontaneously combust - a real barn-fire risk. Always confirm bale moisture with a probe
     before storing. HayWatch does not measure your hay; it only reads the weather forecast.
   </div>
 
   <div class="foot">
-    HayWatch scores each candidate cutting day by the drying window that follows it — combining reference
+    HayWatch scores each candidate cutting day by the drying window that follows it - combining reference
     evapotranspiration (drying power), humidity and overnight dew, and rain risk cross-checked across
     several global weather models. Model agreement is your confidence; disagreement means wait.
     <b>This is a planning aid, not a guarantee.</b> Forecasts are wrong sometimes, and only you can judge
     your fields, equipment, and hay. <b>HayWatch is not responsible for any crop loss, spoilage,
     equipment, property, or other damages arising from decisions made with this app.</b> Use your own
-    judgment — the weather gets the final say.
+    judgment - the weather gets the final say.
   </div>
 </div>
 
@@ -565,7 +557,7 @@ const MODELS=[
 ];
 
 /* ================= crop / product presets =================
-   The "species" analog. All numbers are INFORMED GUESSES, not validated — the cutting log is the
+   The "species" analog. All numbers are INFORMED GUESSES, not validated - the cutting log is the
    calibration path (log outcomes → nudge dry-down over time). Two dimensions:
      crop   → dryFactor: legumes/thick stems hold water and dry slower (need more drying power).
      making → needMm (cumulative reference-ET drying power to reach target moisture), target
@@ -574,7 +566,7 @@ const MODELS=[
 // dryFactor: thicker/waxier stems dry slower. condBenefit: fraction knocked off the drying need when
 // cut with a mower-conditioner (crimped/rolled). Conditioning saves ~1 day, but the benefit is large
 // for thick-stemmed legumes and small for grasses (thin stems, waxy cuticle the crimper barely helps)
-// — Purdue / UGA / Wisconsin extension. See CLAUDE.md sources.
+// - Purdue / UGA / Wisconsin extension. See CLAUDE.md sources.
 const CROPS={
   grass:  {name:'Grass hay',            dryFactor:1.00, condBenefit:0.06},
   orchard:{name:'Orchardgrass / timothy',dryFactor:1.05, condBenefit:0.08},
@@ -584,13 +576,13 @@ const CROPS={
 };
 // needMm calibrated to the NNY field-drying baseline (verified against extension figures + owner's
 // lived numbers): conditioned grass hay reaches baling moisture in ~2 days on a good stretch, ~3 on a
-// mediocre one, ~4 with heavy overnight dew. Baleage wilts in ~1 day. All still informed guesses — the
+// mediocre one, ~4 with heavy overnight dew. Baleage wilts in ~1 day. All still informed guesses - the
 // cutting log calibrates. maxDays = the acceptable window before "slow cure" kicks in.
 const MAKING={
-  dry_square:{name:'Dry hay — small squares', short:'small squares', target:'16–18%', needMm:8, maxDays:4, rainTol:0.18, dewSens:1.00, wet:false},
-  dry_round: {name:'Dry hay — round bales',   short:'round bales',   target:'~18%',   needMm:7, maxDays:4, rainTol:0.32, dewSens:1.00, wet:false},
-  dry_large: {name:'Dry hay — large squares', short:'large squares', target:'≤14%',   needMm:10,maxDays:5, rainTol:0.12, dewSens:1.10, wet:false},
-  baleage:   {name:'Baleage — wrapped',       short:'wrapped baleage',target:'45–55%', needMm:2, maxDays:2, rainTol:0.70, dewSens:0.45, wet:true},
+  dry_square:{name:'Dry hay - small squares', short:'small squares', target:'16-18%', needMm:8, maxDays:4, rainTol:0.18, dewSens:1.00, wet:false},
+  dry_round: {name:'Dry hay - round bales',   short:'round bales',   target:'~18%',   needMm:7, maxDays:4, rainTol:0.32, dewSens:1.00, wet:false},
+  dry_large: {name:'Dry hay - large squares', short:'large squares', target:'≤14%',   needMm:10,maxDays:5, rainTol:0.12, dewSens:1.10, wet:false},
+  baleage:   {name:'Baleage - wrapped',       short:'wrapped baleage',target:'45-55%', needMm:2, maxDays:2, rainTol:0.70, dewSens:0.45, wet:true},
 };
 
 /* ================= storage ================= */
@@ -619,9 +611,9 @@ let DAYS=[];          // built aggregates per day index (14)
 let COUNTY=null,USTATE=null;
 
 const mm2in=mm=>mm/25.4;
-const tempStr=f=>f==null?'—':(UNITS==='metric'?Math.round((f-32)*5/9)+'°C':Math.round(f)+'°F');
-const windStr=mph=>mph==null?'—':(UNITS==='metric'?Math.round(mph*1.60934)+' km/h':Math.round(mph)+' mph');
-const rainStr=mm=>mm==null?'—':(UNITS==='metric'?(mm<0.05?'0':mm.toFixed(mm<10?1:0))+' mm':(mm2in(mm)<0.005?'0':mm2in(mm).toFixed(2))+'"');
+const tempStr=f=>f==null?'-':(UNITS==='metric'?Math.round((f-32)*5/9)+'°C':Math.round(f)+'°F');
+const windStr=mph=>mph==null?'-':(UNITS==='metric'?Math.round(mph*1.60934)+' km/h':Math.round(mph)+' mph');
+const rainStr=mm=>mm==null?'-':(UNITS==='metric'?(mm<0.05?'0':mm.toFixed(mm<10?1:0))+' mm':(mm2in(mm)<0.005?'0':mm2in(mm).toFixed(2))+'"');
 const rainUnit=()=>UNITS==='metric'?'mm':'in';
 const valOf=s=>s.replace(/ ?(mm|in|")$/,'');   // strip the unit suffix, keep just the number
 const compass=deg=>deg==null?'':['N','NE','E','SE','S','SW','W','NW'][Math.round(((deg%360)/45))%8];
@@ -648,7 +640,7 @@ let LOG=normalizeLog(jget('hw_log',[]));
 // NOTE: unlike BiteWatch, the HayWatch score is NOT nudged by the log. Hay dry-down is weather/physics
 // driven, so the forecast (ET₀ + rain across models) is the honest signal; auto-biasing it from a
 // handful of logged cuts would add noise, not accuracy. The log is a record + the calibration readout
-// below (how your calls actually panned out) + the future shared-dataset path — it does not move the score.
+// below (how your calls actually panned out) + the future shared-dataset path - it does not move the score.
 // Calibration readout: how logged cuts actually turned out, bucketed by the score at cut time.
 function calibration(log){
   const band=s=>s>=72?'Prime':s>=52?'Good':s>=34?'Marginal':'Don’t cut';
@@ -666,7 +658,7 @@ function calibration(log){
 function dewMult(d){
   if(d.rhNight==null)return 1;
   const sens=MAKING[PRODUCT].dewSens;
-  // Nightly dew to ~90% RH is routine and burns off by mid-morning — don't punish it. Only genuinely
+  // Nightly dew to ~90% RH is routine and burns off by mid-morning - don't punish it. Only genuinely
   // saturated overnights (RH >92%, i.e. the dew lingers) meaningfully slow the swath, and gently.
   const f=1-Math.max(0,(d.rhNight-92)/8)*0.30*sens;   // 92%→1.0, 100%→~0.76
   return Math.max(0.55,Math.min(1,f));
@@ -674,7 +666,7 @@ function dewMult(d){
 // Effective drying power for a day (mm of reference ET), discounted for overnight dew.
 function effEt0(d){ return d.et0!=null?d.et0*dewMult(d):0; }
 
-// Drying power (mm of reference ET) required to reach baling moisture — crop stem-thickness × product
+// Drying power (mm of reference ET) required to reach baling moisture - crop stem-thickness × product
 // target, reduced when cut with a conditioner (crop-dependent benefit).
 function dryNeed(){
   const cr=CROPS[CROP];
@@ -743,7 +735,7 @@ function scoreCut(D){
 
   // --- forecast confidence from model agreement across the window ---
   // Needs BOTH: the models must agree AND there must be enough of them (far-out days only a couple of
-  // models reach, which is a weak cross-check — never call that "High" no matter how "unanimous").
+  // models reach, which is a weak cross-check - never call that "High" no matter how "unanimous").
   let unan=0,uc=0,cntSum=0,modelsSeen=0;
   for(let j=D;j<=winEnd;j++){const dd=DAYS[j];if(dd&&dd.rainCount!=null){const fr=dd.rainFrac;unan+=Math.abs(fr-0.5)*2;uc++;cntSum+=dd.rainCount;modelsSeen=Math.max(modelsSeen,dd.rainCount);}}
   const agreeScore=uc?unan/uc:0, horizonDecay=Math.max(0,1-D/12);
@@ -777,11 +769,11 @@ function dayShort(i){
 
 /* ================= risk line (plain language) ================= */
 function whenPhrase(w){return w.arrival!=null?` from ~${fmtClock(w.arrival)}`:'';}
-// rain-type tail for the risk line — the DeKalb/Gouverneur reconciliation in words
+// rain-type tail for the risk line - the DeKalb/Gouverneur reconciliation in words
 function kindTail(idx){
   const k=DAYS[idx]&&DAYS[idx].rainKind;
-  if(k==='scattered')return ` — scattered, so your field may dodge it, but it's a gamble`;
-  if(k==='widespread')return ` — widespread, don't count on dodging it`;
+  if(k==='scattered')return ` - scattered, so your field may dodge it, but it's a gamble`;
+  if(k==='widespread')return ` - widespread, don't count on dodging it`;
   return '';
 }
 function riskLine(r){
@@ -798,17 +790,17 @@ function riskLine(r){
     return `Rain risk ${dayShort(w.idx)}${whenPhrase(w)}${m} mid-cure${kindTail(w.idx)}. Watch it.`;
   }
   if(r.heavyDew){
-    return `Clear days but heavy overnight dew — the swath re-wets, add drying time.`;
+    return `Clear days but heavy overnight dew - the swath re-wets, add drying time.`;
   }
   if(r.pddEnough){
     const bale=Math.min(DAYS.length-1,r.D+Math.ceil(r.pdd));
     // if there's a light shower later in the window, tell them the deadline to bale ahead of it
     let ahead='';
-    if(r.worstRain&&r.worstRain.arrival!=null&&r.worstRain.idx>=bale){ahead=` — bale ahead of ${dayShort(r.worstRain.idx)}'s rain (~${fmtClock(r.worstRain.arrival)})`;}
-    if(r.score>=72)return `Open drying stretch — cut ${dayShort(r.D)}, bale around ${dayShort(bale)}${ahead}. Good to go.`;
-    return `Workable window — cut ${dayShort(r.D)}, aim to bale by ${dayShort(bale)}${ahead}.`;
+    if(r.worstRain&&r.worstRain.arrival!=null&&r.worstRain.idx>=bale){ahead=` - bale ahead of ${dayShort(r.worstRain.idx)}'s rain (~${fmtClock(r.worstRain.arrival)})`;}
+    if(r.score>=72)return `Open drying stretch - cut ${dayShort(r.D)}, bale around ${dayShort(bale)}${ahead}. Good to go.`;
+    return `Workable window - cut ${dayShort(r.D)}, aim to bale by ${dayShort(bale)}${ahead}.`;
   }
-  return `Marginal drying — no margin if the forecast slips.`;
+  return `Marginal drying - no margin if the forecast slips.`;
 }
 function dewText(dd){
   if(dd.dewLingers)return 'dew lingers all day';
@@ -822,7 +814,7 @@ function modelPhrase(w){
 }
 
 /* ================= formatting ================= */
-function fmtClock(mins){if(mins==null||isNaN(mins))return '—';mins=((mins%1440)+1440)%1440;
+function fmtClock(mins){if(mins==null||isNaN(mins))return '-';mins=((mins%1440)+1440)%1440;
   let h=Math.floor(mins/60),m=Math.round(mins%60);if(m===60){m=0;h++;}
   const ap=h<12?'AM':'PM';let hh=h%12;if(hh===0)hh=12;return hh+':'+String(m).padStart(2,'0')+' '+ap;}
 function haversine(a,b,c,d){const R=3959,p=Math.PI/180;
@@ -849,11 +841,11 @@ function renderProduct(){
   const condNote=CONDITIONED
     ? (cr.condBenefit>=0.2?` Crimping cuts drying roughly a day on ${cr.name.toLowerCase()}'s thick stems.`
        :cr.condBenefit>=0.12?` Crimping shaves some drying time.`
-       :` Crimping helps grasses only a little — thin stems, waxy leaf.`)
-    : ` Plain-cut adds drying time — no crimped stems to let moisture out.`;
+       :` Crimping helps grasses only a little - thin stems, waxy leaf.`)
+    : ` Plain-cut adds drying time - no crimped stems to let moisture out.`;
   document.getElementById('prodNote').innerHTML=
     `Target moisture <b>${mk.target}</b> · ideal window <b>~${mk.maxDays} day${mk.maxDays===1?'':'s'}</b>.`+
-    (mk.wet?` Baleage wilts ~a day then gets wrapped wet — far more rain-tolerant than dry hay.`:condNote);
+    (mk.wet?` Baleage wilts ~a day then gets wrapped wet - far more rain-tolerant than dry hay.`:condNote);
 }
 function renderBest(){
   const bar=document.getElementById('bestBar');
@@ -864,7 +856,7 @@ function renderBest(){
   document.getElementById('bestTxt').innerHTML=
     (b.tier.word==='Don’t cut')
       ? `<span style="color:${t.color}">No good cut day in the next ${DAYS.length}.</span>`
-      : `Best cut: <b style="color:${t.color}">${dayName(b.D)}</b> — ${t.word} (${Math.round(b.score)})`;
+      : `Best cut: <b style="color:${t.color}">${dayName(b.D)}</b> - ${t.word} (${Math.round(b.score)})`;
   bar.onclick=()=>{SEL.dayIdx=b.D;renderAll();document.getElementById('bestBar').scrollIntoView({behavior:'smooth',block:'start'});};
 }
 function renderHero(){
@@ -877,7 +869,7 @@ function renderHero(){
   el('meterFill').style.background=`linear-gradient(90deg,var(--card-hi),${t.color})`;
   el('dayLabel').textContent=SEL.dayIdx===0?'Cut today?':'Cut '+dayName(SEL.dayIdx).toLowerCase()+'?';
   el('reasonMain').textContent=riskLine(r);el('reasonWhy').textContent='';
-  el('mDry').innerHTML=r.pddEnough?`${Math.ceil(r.pdd)}<small> days</small>`:`—`;
+  el('mDry').innerHTML=r.pddEnough?`${Math.ceil(r.pdd)}<small> days</small>`:`-`;
   el('mRain').innerHTML=`${valOf(rainStr(r.rainWindow))}<small> ${rainUnit()}</small>`;
   const cc=r.confidence==='High'?'hi':r.confidence==='Medium'?'med':'lo';
   el('mConf').innerHTML=`<span class="conf ${cc}">${r.confidence}</span>`;
@@ -886,7 +878,7 @@ function renderHero(){
   const fmtV=v=>(v>=0?'+':'−')+Math.abs(Math.round(v));
   wl.innerHTML=r.parts.filter(p=>Math.abs(p.v)>=0.5).map(p=>`<div class="whyrow"><span class="wl">${p.label}</span><span class="wv ${p.v>=0?'pos':'neg'}">${fmtV(p.v)}</span></div>`).join('')
     +`<div class="whyrow"><span class="wl">Base</span><span class="wv">+60</span></div>`
-    +`<div class="whyrow tot"><span class="wl">Cut score (0–100)</span><span class="wv">${Math.round(r.score)}</span></div>`
+    +`<div class="whyrow tot"><span class="wl">Cut score (0-100)</span><span class="wv">${Math.round(r.score)}</span></div>`
     +`<div class="loc" style="margin-top:6px">Rain risk is cross-checked across ${r.modelsSeen||MODELS.length} weather models. Weights are informed guesses; your cutting log calibrates them.</div>`;
   wl.style.display=WHYOPEN?'block':'none';
   el('whyBtn').textContent=WHYOPEN?'Hide breakdown':'Why this call?';
@@ -898,7 +890,7 @@ function renderDays(){
     const c=document.createElement('div');c.className='day'+(on?' on':'');
     c.innerHTML=`<div class="dow">${i===0?'Today':dayShort(i)}</div>
       <div class="num">${Math.round(r.score)}</div><div class="rw" style="color:${t.color}">${t.word}</div>
-      <div class="bw">${r.pddEnough?Math.ceil(r.pdd)+'d dry':'—'}</div>`;
+      <div class="bw">${r.pddEnough?Math.ceil(r.pdd)+'d dry':'-'}</div>`;
     c.onclick=()=>{SEL.dayIdx=i;renderAll();};
     el.appendChild(c);
   }
@@ -962,7 +954,7 @@ function renderChart(){
   DAYS.forEach((d,i)=>{if(i%2===0)svg+=`<text x="${xf(i)+cw/2}" y="${H-4}" fill="var(--mut)" font-size="9" font-family="Barlow" text-anchor="middle">${i===0?'now':dayShort(i)}</text>`;});
   el.innerHTML=svg+`</svg>`;
 }
-// Per-model rain for the SELECTED cut window — "shows what they show" so you can cross-check sources.
+// Per-model rain for the SELECTED cut window - "shows what they show" so you can cross-check sources.
 function renderModels(){
   const list=document.getElementById('modelList'),intro=document.getElementById('modelIntro');
   const sub=document.getElementById('modelSub');
@@ -977,14 +969,14 @@ function renderModels(){
   }).filter(x=>x.have>0).sort((a,b)=>a.sum-b.sum);
   const wet=rows.filter(x=>x.wet).length, n=rows.length;
   sub.textContent=n?`${wet}/${n} see rain`:'';
-  const winLabel=winDates.length>1?`${dayShort(r.D)}–${dayShort(r.winEnd)}`:dayShort(r.D);
-  const few=n>0&&n<3;   // far-out days: only a model or two reach — weak cross-check
+  const winLabel=winDates.length>1?`${dayShort(r.D)}-${dayShort(r.winEnd)}`:dayShort(r.D);
+  const few=n>0&&n<3;   // far-out days: only a model or two reach - weak cross-check
   intro.innerHTML=`For your <b>${winLabel}</b> drying window, here's each model's total rain. `+
-    (n===0?`No model data reaches this far out yet — the score falls back to the main forecast.`
-      :few?`Only <b>${n} model${n===1?'':'s'}</b> ${n===1?'reaches':'reach'} this far out — limited cross-check, so treat it as <b>low confidence</b> until nearer days fill in.`
-      :wet===0?`<b>All ${n} agree it stays dry</b> — strong agreement.`
-      :wet===n?`<b>All ${n} agree on rain</b> — strong agreement it's wet.`
-      :`<b>${wet} of ${n} see rain</b> — the models disagree, so the forecast isn't settled. When they split, wait.`);
+    (n===0?`No model data reaches this far out yet - the score falls back to the main forecast.`
+      :few?`Only <b>${n} model${n===1?'':'s'}</b> ${n===1?'reaches':'reach'} this far out - limited cross-check, so treat it as <b>low confidence</b> until nearer days fill in.`
+      :wet===0?`<b>All ${n} agree it stays dry</b> - strong agreement.`
+      :wet===n?`<b>All ${n} agree on rain</b> - strong agreement it's wet.`
+      :`<b>${wet} of ${n} see rain</b> - the models disagree, so the forecast isn't settled. When they split, wait.`);
   list.innerHTML=rows.map(x=>{
     const col=x.wet?'var(--danger)':'var(--good)';
     return `<div class="mrow"><span class="mdot" style="background:${col}"></span>
@@ -999,16 +991,16 @@ function renderConditions(){
   const now=new Date();const key=dstr(now)+'T'+String(now.getHours()).padStart(2,'0');
   let hi=HOURLY.time.findIndex(t=>t.slice(0,13)===key);if(hi<0)hi=0;
   el('cAir').innerHTML=tempStr(HOURLY.temp[hi]);
-  el('cRH').innerHTML=HOURLY.rh[hi]!=null?Math.round(HOURLY.rh[hi])+'<small>%</small>':'—';
+  el('cRH').innerHTML=HOURLY.rh[hi]!=null?Math.round(HOURLY.rh[hi])+'<small>%</small>':'-';
   el('cDew').innerHTML=tempStr(HOURLY.dew[hi]);
   const wd=HOURLY.windDir?compass(HOURLY.windDir[hi]):'';
-  el('cWind').innerHTML=HOURLY.wind[hi]!=null?windStr(HOURLY.wind[hi]).split(' ')[0]+' <small>'+windStr(HOURLY.wind[hi]).split(' ').slice(1).join(' ')+(wd?' · '+wd:'')+'</small>':'—';
+  el('cWind').innerHTML=HOURLY.wind[hi]!=null?windStr(HOURLY.wind[hi]).split(' ')[0]+' <small>'+windStr(HOURLY.wind[hi]).split(' ').slice(1).join(' ')+(wd?' · '+wd:'')+'</small>':'-';
   const d0=DAYS[0];
   const et=d0.et0||0, lab=et>=5?'Strong':et>=3?'Fair':'Weak';
   el('cEt0').innerHTML=`${valOf(rainStr(et))}<small> ${rainUnit()} · ${lab}</small>`;
   el('cRain').innerHTML=`${valOf(rainStr(d0.rain||0))}<small> ${rainUnit()}${d0.rainProb!=null?' · '+d0.rainProb+'%':''}</small>`;
-  const dw=d0.dewLingers?'<b style="color:var(--danger)">Dew likely lingers all day</b> — the swath won\'t work well.'
-    :(d0.dewOff!=null?`<b>Dew off ~${fmtClock(d0.dewOff)}</b>${d0.dewSet!=null?` · sets back in ~${fmtClock(d0.dewSet)}`:''} — that's today's workable window for cutting, raking &amp; baling.`:'');
+  const dw=d0.dewLingers?'<b style="color:var(--danger)">Dew likely lingers all day</b> - the swath won\'t work well.'
+    :(d0.dewOff!=null?`<b>Dew off ~${fmtClock(d0.dewOff)}</b>${d0.dewSet!=null?` · sets back in ~${fmtClock(d0.dewSet)}`:''} - that's today's workable window for cutting, raking &amp; baling.`:'');
   el('wxNote').innerHTML=(dw?dw+'<br>':'')+'Reference ET₀ is the composite drying power (sun, heat, wind, dryness in one number). Rain risk is cross-checked across '+MODELS.length+' global models.';
   el('unitBtn').textContent=UNITS==='metric'?'Metric':'US';
 }
@@ -1028,7 +1020,7 @@ function renderSpots(){
     el.appendChild(b);
   });
 }
-// Compare all pinned fields side by side — lazy (only on button press), fetches each field's forecast,
+// Compare all pinned fields side by side - lazy (only on button press), fetches each field's forecast,
 // then restores the current field's data so the main view is untouched. This is where the DeKalb vs
 // Gouverneur split shows: nearby fields, different calls.
 let COMPARING=false;
@@ -1068,7 +1060,7 @@ function renderLog(){
   const learnEl=document.getElementById('learn');
   const withOutcome=LOG.filter(e=>e.outcome).length;
   if(LOG.length<3){
-    learnEl.innerHTML=`<b>${LOG.length}</b> cut${LOG.length===1?'':'s'} logged. After a cut is baled, tap it and set the <b>outcome</b> — HayWatch tracks how the forecast actually held up on your fields. (It records your calls; it doesn't auto-adjust the score.)`;
+    learnEl.innerHTML=`<b>${LOG.length}</b> cut${LOG.length===1?'':'s'} logged. After a cut is baled, tap it and set the <b>outcome</b> - HayWatch tracks how the forecast actually held up on your fields.`;
   }else{
     const cal=calibration(LOG);
     const calLine=cal.length?`How your calls panned out: <b>${cal.map(c=>c.band+' '+c.good+'/'+c.n).join(' · ')}</b> turned out well. `:'';
@@ -1087,7 +1079,7 @@ function renderLog(){
     const sub=bits.length?`<span class="sub2">${bits.join(' · ')}</span>`:'';
     row.innerHTML=`<span class="sp">${cr.name} · ${mk.short}${sub}</span>
       <span class="tagpill ${ocCls}">${oc?OUTCOME_LABEL[oc]:'open'}</span>
-      <span class="meta">${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}<br>score ${e.ctx&&e.ctx.score!=null?e.ctx.score:'—'}</span>`;
+      <span class="meta">${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}<br>score ${e.ctx&&e.ctx.score!=null?e.ctx.score:'-'}</span>`;
     row.style.cursor='pointer';row.onclick=()=>{EDIT_ID=e.id;openEditor(e);};
     list.appendChild(row);
   });
@@ -1116,8 +1108,8 @@ function buildDays(){
     DAYS.push(d);
   }
 }
-// Scan a day's hourly weather codes for the RAIN TYPE tell: shower/thunder codes (80–82, 95–99) are
-// convective = scattered/hit-or-miss; drizzle/steady-rain/snow codes (51–67, 71–77) are stratiform =
+// Scan a day's hourly weather codes for the RAIN TYPE tell: shower/thunder codes (80-82, 95-99) are
+// convective = scattered/hit-or-miss; drizzle/steady-rain/snow codes (51-67, 71-77) are stratiform =
 // widespread. WMO weather codes via Open-Meteo.
 function convSignals(date){
   if(!HOURLY||!HOURLY.wcode)return {showers:false,steady:false};
@@ -1130,7 +1122,7 @@ function convSignals(date){
   }
   return {showers,steady};
 }
-// Classify a day's rain: 'dry' | 'scattered' (hit-or-miss — your field may dodge it) | 'widespread'
+// Classify a day's rain: 'dry' | 'scattered' (hit-or-miss - your field may dodge it) | 'widespread'
 // (county-wide, don't count on dodging). A "40% chance" is areal coverage × confidence, so scattered
 // convective days are exactly the "rains in Gouverneur, misses DeKalb" case. Signals: model spread,
 // amount vs probability, and convective vs stratiform weather codes.
@@ -1166,7 +1158,7 @@ function dewTimes(date,sunriseIso){
   }
   return {off,set,lingers:!sawLow};
 }
-// When rain first arrives on a given day (minutes into the day), from the hourly forecast — the
+// When rain first arrives on a given day (minutes into the day), from the hourly forecast - the
 // actionable "you've got until X to bale ahead of it" signal. First hour with ≥0.4 mm precip OR ≥55%
 // chance. Null = no meaningful rain that day.
 function rainArrival(date){
@@ -1179,7 +1171,7 @@ function rainArrival(date){
   }
   return null;
 }
-// max relative humidity overnight (20:00 of date → 07:00 next day) — proxy for dew / swath re-wetting
+// max relative humidity overnight (20:00 of date → 07:00 next day) - proxy for dew / swath re-wetting
 function overnightRH(date){
   if(!HOURLY)return null;
   let mx=null;
@@ -1258,7 +1250,7 @@ async function loadRadar(){
     if(!RADAR.frames.length)throw 0;
     RADAR.idx=Math.max(0,past.length-1);   // latest observed frame
     RADAR.loaded=true;
-    document.getElementById('radarNote').innerHTML='Rain over the map, centered on your field — ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.<br><span style="opacity:.7">Radar © RainViewer · Map © Esri</span>';
+    document.getElementById('radarNote').innerHTML='Rain over the map, centered on your field - ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.<br><span style="opacity:.7">Radar © RainViewer · Map © Esri</span>';
     ctrls.style.display='flex';
     renderRadarFrame();
   }catch(e){if(hint)hint.textContent='Radar did not load (needs signal). Try again shortly.';}
@@ -1275,7 +1267,7 @@ function renderRadarFrame(){
     // dark base map (ESRI Dark Gray Canvas, keyless) UNDER the radar so precip shows over real geography.
     // Note ESRI tile order is /{z}/{y}/{x} (row then col), no key, no subdomains.
     base+=`<img src="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${z}/${ty}/${tx}" alt="">`;
-    // radar (RainViewer) — transparent where no precip, so the base map shows through
+    // radar (RainViewer) - transparent where no precip, so the base map shows through
     radar+=`<img src="${RADAR.host}${f.path}/256/${z}/${tx}/${ty}/4/1_1.png" alt="">`;
   }
   // mosaic spans 3 tiles; crop/scale so the wrap shows RADAR.span miles centered on the field
@@ -1285,7 +1277,7 @@ function renderRadarFrame(){
   const fMx=(256+fracX*256)/768, fMy=(256+fracY*256)/768; // field position as fraction of the mosaic
   const gs=`position:absolute;width:${scale*100}%;height:${scale*100}%;`+
            `left:${(0.5-fMx*scale)*100}%;top:${(0.5-fMy*scale)*100}%;`;
-  // overlay in a 0–100 box: field at center, rings by miles/span
+  // overlay in a 0-100 box: field at center, rings by miles/span
   const ring=m=>`<circle cx="50" cy="50" r="${m/RADAR.span*100}" fill="none" stroke="#eef4ee" stroke-width=".5" stroke-dasharray="1.6 1.6"/>`;
   const svg=`<svg viewBox="0 0 100 100" preserveAspectRatio="none">
     <g stroke-opacity=".34">${ring(25)}${ring(50)}</g><g stroke-opacity=".2">${ring(100)}</g>
@@ -1298,7 +1290,7 @@ function renderRadarFrame(){
   document.getElementById('radarTime').textContent=lbl;
 }
 
-/* ================= county (FCC Area API, free) — for future per-state notes ================= */
+/* ================= county (FCC Area API, free) - for future per-state notes ================= */
 async function loadCounty(){
   try{
     const r=await fetch(`https://geo.fcc.gov/api/census/area?lat=${SEL.lat}&lon=${SEL.lon}&format=json`);
@@ -1335,7 +1327,7 @@ function scheduleCoordUpdate(){
 document.getElementById('lat').addEventListener('input',scheduleCoordUpdate);
 document.getElementById('lon').addEventListener('input',scheduleCoordUpdate);
 
-// location search (Open-Meteo geocoding — free, keyless)
+// location search (Open-Meteo geocoding - free, keyless)
 let placeTimer=null;
 const psEl=document.getElementById('placeSearch'),prEl=document.getElementById('placeResults');
 async function searchPlace(q){
@@ -1497,7 +1489,7 @@ async function shareForecast(){
   // wrap risk line
   x.fillStyle='#c9d8cd';x.font='500 34px Barlow, sans-serif';wrapText(x,riskLine(r),C/2,770,900,44);
   x.fillStyle='#e8b23a';x.font='600 34px Barlow, sans-serif';x.fillText('haywatch.pages.dev',C/2,1000);
-  const text=`🌾 HayWatch — ${dayName(SEL.dayIdx)} near ${spot}: ${t.word} (${Math.round(r.score)}/100) for ${mk.short}. ${riskLine(r)} haywatch.pages.dev`;
+  const text=`🌾 HayWatch - ${dayName(SEL.dayIdx)} near ${spot}: ${t.word} (${Math.round(r.score)}/100) for ${mk.short}. ${riskLine(r)} haywatch.pages.dev`;
   cv.toBlob(async(blob)=>{
     const file=new File([blob],'haywatch.png',{type:'image/png'});
     try{
