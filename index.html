@@ -1258,7 +1258,7 @@ async function loadRadar(){
     if(!RADAR.frames.length)throw 0;
     RADAR.idx=Math.max(0,past.length-1);   // latest observed frame
     RADAR.loaded=true;
-    document.getElementById('radarNote').innerHTML='Precipitation only, centered on your field — ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. No rain shows as dark. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.';
+    document.getElementById('radarNote').innerHTML='Rain over the map, centered on your field — ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.<br><span style="opacity:.7">Radar © RainViewer · Map © OpenStreetMap, © CARTO</span>';
     ctrls.style.display='flex';
     renderRadarFrame();
   }catch(e){if(hint)hint.textContent='Radar did not load (needs signal). Try again shortly.';}
@@ -1269,9 +1269,14 @@ function renderRadarFrame(){
   const z=RADAR.z, fx=lon2tileF(SEL.lon,z), fy=lat2tileF(SEL.lat,z);
   const cx=Math.floor(fx), cy=Math.floor(fy), fracX=fx-cx, fracY=fy-cy;
   const f=RADAR.frames[RADAR.idx];
-  let imgs='';
+  let base='',radar='';
+  const subs='abcd';
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-    imgs+=`<img src="${RADAR.host}${f.path}/256/${z}/${cx+dx}/${cy+dy}/4/1_1.png" alt="">`;
+    const tx=cx+dx, ty=cy+dy, s=subs[(Math.abs(tx)+Math.abs(ty))%4];
+    // dark base map (Carto, keyless) UNDER the radar so precip shows over real geography
+    base+=`<img src="https://${s}.basemaps.cartocdn.com/dark_all/${z}/${tx}/${ty}@2x.png" alt="">`;
+    // radar (RainViewer) — transparent where no precip, so the base map shows through
+    radar+=`<img src="${RADAR.host}${f.path}/256/${z}/${tx}/${ty}/4/1_1.png" alt="">`;
   }
   // mosaic spans 3 tiles; crop/scale so the wrap shows RADAR.span miles centered on the field
   const mPerPx=156543.03392*Math.cos(SEL.lat*Math.PI/180)/Math.pow(2,z);
@@ -1286,7 +1291,7 @@ function renderRadarFrame(){
     <g stroke-opacity=".34">${ring(25)}${ring(50)}</g><g stroke-opacity=".2">${ring(100)}</g>
     <circle cx="50" cy="50" r="1.6" fill="#79b7d8" stroke="#fff" stroke-width=".6"/>
     <text x="50" y="4.5" fill="#eef4ee" fill-opacity=".55" font-size="4" text-anchor="middle" font-family="Barlow">N</text></svg>`;
-  wrap.innerHTML=`<div class="rgrid" style="${gs}">${imgs}</div>${svg}`;
+  wrap.innerHTML=`<div class="rgrid rbase" style="${gs}">${base}</div><div class="rgrid rradar" style="${gs}">${radar}</div>${svg}`;
   const d=new Date(f.time*1000);
   const lbl=f.nowcast?('nowcast +'+Math.max(0,Math.round((f.time*1000-Date.now())/60000))+' min')
     :fmtClock(d.getHours()*60+d.getMinutes());
