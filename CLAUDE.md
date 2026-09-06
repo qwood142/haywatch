@@ -28,6 +28,7 @@ index.html    the whole app (day aggregates, dry-down scoring, multi-model agree
 manifest.json PWA manifest
 sw.js         service worker (offline shell); bump CACHE const to force clients to refresh
 README.md     user-facing deploy + tuning notes
+MONETIZE.md   monetization game plan (tip jar / affiliate / paid alerts / B2B data) - planning only
 CLAUDE.md     this file  ← source of truth for decisions/schema/tuning
 icon-192.png / icon-512.png / icon-maskable-512.png   real HayWatch art (sun + round hay bale + grass
               tufts on the dark-green gradient). Source: haywatch_icon.svg.
