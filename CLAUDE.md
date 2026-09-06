@@ -231,8 +231,10 @@ by default and the owner accepts this on BiteWatch, so it's left as-is unless th
    it, but it's a gamble") and as a tag on the plan's wet-day rows. No new panel — folded into existing UI.
 5. ✅ **Fields dashboard pieces (condensed).** (a) **Radar panel** — collapsible, lazy (loads only when
    opened); RainViewer (`api.rainviewer.com/public/weather-maps.json`, free/keyless/CORS-OK — tested).
-   3×3 radar tiles at zoom 9 centered on the field, dark ground (precip only), SVG overlay with the field
-   marker + 25/50 mi range rings, frame scrubber + play across ~2 h past (+ nowcast frames when present).
+   3×3 radar tiles at **zoom 7 (RainViewer's hard max — higher zooms return a "Zoom Level/Support"
+   placeholder tile, which was a bug)**, then CSS-cropped/scaled to a ~200 mi view centered on the field
+   (`RADAR.span`); dark ground (precip only), SVG overlay (0–100 box) with the field marker + 25/50/100 mi
+   range rings, frame scrubber + play across ~2 h past (+ nowcast frames when present).
    `RADAR` state; `loadRadar`/`renderRadarFrame`; re-centers on field change if open. DISPLAY only — no
    pixel-sampling (CORS-dicey). Radar nowcast reaches ~0–60 min = same-day "keep-baling" mode, not
    planning. (b) **Compare my fields** — button in the Fields panel, shown only with ≥2 pinned fields;

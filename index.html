@@ -223,7 +223,7 @@
   #radarPanel[open] summary::before{content:'▾'}
   .radarwrap{position:relative;width:100%;aspect-ratio:1;margin-top:12px;border-radius:12px;overflow:hidden;
     background:#0a1610;border:1px solid var(--line)}
-  .radarwrap .rgrid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)}
+  .radarwrap .rgrid{position:absolute;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)}
   .radarwrap .rgrid img{width:100%;height:100%;display:block;object-fit:cover}
   .radarwrap svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
   .radarhint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;text-align:center;padding:0 20px}
@@ -1242,7 +1242,9 @@ async function loadModels(){
    Same-day view: recent radar frames + short nowcast, centered on the selected field, over a plain
    dark ground (precip only). Rings at 25/50 mi give geographic sense; watch cell motion for warning
    time. Loads lazily only when the panel is opened. */
-const RADAR={z:9,host:null,frames:[],idx:0,playing:false,timer:null,loaded:false};
+// RainViewer caps radar tiles at zoom 7, so we use z=7 and crop/scale the 3×3 mosaic down to a ~200-mile
+// view centered on the field (SPAN_MI). Wider than a county but good for "what's headed my way" warning.
+const RADAR={z:7,span:200,host:null,frames:[],idx:0,playing:false,timer:null,loaded:false};
 function lon2tileF(lon,z){return (lon+180)/360*Math.pow(2,z);}
 function lat2tileF(lat,z){const r=lat*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,z);}
 async function loadRadar(){
@@ -1256,7 +1258,7 @@ async function loadRadar(){
     if(!RADAR.frames.length)throw 0;
     RADAR.idx=Math.max(0,past.length-1);   // latest observed frame
     RADAR.loaded=true;
-    document.getElementById('radarNote').innerHTML='Precipitation only, centered on your field — rings at 25 &amp; 50&nbsp;mi. No rain shows as dark. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.';
+    document.getElementById('radarNote').innerHTML='Precipitation only, centered on your field — ~200&nbsp;mi across, rings at 25 / 50 / 100&nbsp;mi. No rain shows as dark. Watch which way cells move: that\'s your warning time. Nowcast frames (if any) extrapolate ~the next hour.';
     ctrls.style.display='flex';
     renderRadarFrame();
   }catch(e){if(hint)hint.textContent='Radar did not load (needs signal). Try again shortly.';}
@@ -1271,15 +1273,20 @@ function renderRadarFrame(){
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
     imgs+=`<img src="${RADAR.host}${f.path}/256/${z}/${cx+dx}/${cy+dy}/4/1_1.png" alt="">`;
   }
-  const mx=256+fracX*256, my=256+fracY*256;
-  const mPerPx=156543.03392*Math.cos(SEL.lat*Math.PI/180)/Math.pow(2,z), pxPerMile=1609.344/mPerPx;
-  const r25=25*pxPerMile, r50=50*pxPerMile;
-  const svg=`<svg viewBox="0 0 768 768">
-    <circle cx="${mx}" cy="${my}" r="${r25}" fill="none" stroke="#eef4ee" stroke-opacity=".38" stroke-width="1.5" stroke-dasharray="5 5"/>
-    <circle cx="${mx}" cy="${my}" r="${r50}" fill="none" stroke="#eef4ee" stroke-opacity=".22" stroke-width="1.5" stroke-dasharray="5 5"/>
-    <circle cx="${mx}" cy="${my}" r="6.5" fill="#79b7d8" stroke="#fff" stroke-width="2"/>
-    <text x="384" y="20" fill="#eef4ee" fill-opacity=".55" font-size="15" text-anchor="middle" font-family="Barlow">N</text></svg>`;
-  wrap.innerHTML=`<div class="rgrid">${imgs}</div>${svg}`;
+  // mosaic spans 3 tiles; crop/scale so the wrap shows RADAR.span miles centered on the field
+  const mPerPx=156543.03392*Math.cos(SEL.lat*Math.PI/180)/Math.pow(2,z);
+  const mosaicMiles=768*mPerPx/1609.344;                 // width of the 3×3 mosaic in miles
+  const scale=mosaicMiles/RADAR.span;                    // >1 → zoom in on the mosaic
+  const fMx=(256+fracX*256)/768, fMy=(256+fracY*256)/768; // field position as fraction of the mosaic
+  const gs=`position:absolute;width:${scale*100}%;height:${scale*100}%;`+
+           `left:${(0.5-fMx*scale)*100}%;top:${(0.5-fMy*scale)*100}%;`;
+  // overlay in a 0–100 box: field at center, rings by miles/span
+  const ring=m=>`<circle cx="50" cy="50" r="${m/RADAR.span*100}" fill="none" stroke="#eef4ee" stroke-width=".5" stroke-dasharray="1.6 1.6"/>`;
+  const svg=`<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+    <g stroke-opacity=".34">${ring(25)}${ring(50)}</g><g stroke-opacity=".2">${ring(100)}</g>
+    <circle cx="50" cy="50" r="1.6" fill="#79b7d8" stroke="#fff" stroke-width=".6"/>
+    <text x="50" y="4.5" fill="#eef4ee" fill-opacity=".55" font-size="4" text-anchor="middle" font-family="Barlow">N</text></svg>`;
+  wrap.innerHTML=`<div class="rgrid" style="${gs}">${imgs}</div>${svg}`;
   const d=new Date(f.time*1000);
   const lbl=f.nowcast?('nowcast +'+Math.max(0,Math.round((f.time*1000-Date.now())/60000))+' min')
     :fmtClock(d.getHours()*60+d.getMinutes());
