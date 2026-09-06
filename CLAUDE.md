@@ -29,8 +29,12 @@ manifest.json PWA manifest
 sw.js         service worker (offline shell); bump CACHE const to force clients to refresh
 README.md     user-facing deploy + tuning notes
 CLAUDE.md     this file  ← source of truth for decisions/schema/tuning
-icon-192.png / icon-512.png / icon-maskable-512.png   ⚠ STILL BITEWATCH ART (amber crescent + fish).
-              Swap motif to sun + hay/grass. No generator in repo — edit the PNGs as images.
+icon-192.png / icon-512.png / icon-maskable-512.png   real HayWatch art (sun + round hay bale + grass
+              tufts on the dark-green gradient). Source: haywatch_icon.svg.
+haywatch_icon.svg     the icon source (512 SVG). Re-render the PNGs from it: open in the browser, draw to
+              a canvas, toDataURL('image/png'); the maskable = art at 80% on a full-bleed #12271A bg.
+              (No Node/Python on the owner's box; PNGs were rasterized via browser canvas + PowerShell
+              System.Drawing. See session history if regenerating.)
 .claude/launch.json   local dev-server config (npx serve on :3210) for the preview pane
 ```
 
@@ -196,9 +200,11 @@ drying-power chart → conditions → cutting log**.
    drying-power + rain chart, cut→cure→bale plan, dew burn-off timing, cutting log with outcomes,
    location-first layout, Fields, PWA shell, share card, safety + liability framing.
 2. Tip button URL (`TIP_URL` const at top of `<script>`, empty = hidden) — platform owner's choice.
-3. Real HayWatch icon art (icons are still BiteWatch's fish). Swap motif to sun + hay bale/grass over
-   the dark green gradient. No generator in the repo — edit the PNGs as images or add one back.
-4. Optional refinements: wire dew-off→set window into `effEt0`; add `soil_moisture_0_to_7cm`; a
+3. ✅ Real HayWatch icon art (sun + round hay bale + grass on the dark-green gradient); source in
+   `haywatch_icon.svg`.
+4. Optional refinements: add HRRR (3 km) explicitly to the near-term rain agreement and weight it for
+   the 0–2 day window; add a wide-swath drying factor (extension: wide swath > conditioning for fast
+   dry-down); wire dew-off→set window into `effEt0`; add `soil_moisture_0_to_7cm`; a
    cut/ted/rake/bale step tracker per active cut; push/rain-on-cut alerts.
 5. v2 (deliberate, breaks no-server): shared per-field outcomes → a real dry-down dataset (same moat
    logic as BiteWatch). Cloudflare Worker + D1. Fuzz coords on the shared record.
@@ -208,8 +214,9 @@ drying-power chart → conditions → cutting log**.
 - In a genuinely wet fortnight every cut window catches rain, so the whole 14-day outlook can read
   "Don't cut" with scores at 0. That's honest, not a bug — but the flatness hides relative ranking. If
   it bugs the owner, let the raw score go slightly negative internally so least-bad days still sort.
-- Icons are BiteWatch art (see roadmap 3).
 - Dry-down `needMm` and rain-penalty weights are unvalidated guesses; the log is the calibration path.
+- The maskable icon has a faint seam where the 80% art tile meets the full-bleed background; invisible
+  once a circular/rounded mask is applied. Fine for v1.
 
 ## Working style
 
