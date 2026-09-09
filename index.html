@@ -675,8 +675,19 @@ function dewMult(d){
   const f=1-Math.max(0,(d.rhNight-92)/8)*0.30*sens;   // 92%→1.0, 100%→~0.76
   return Math.max(0.55,Math.min(1,f));
 }
-// Effective drying power for a day (mm of reference ET), discounted for overnight dew.
-function effEt0(d){ return d.et0!=null?d.et0*dewMult(d):0; }
+// A day the swath is actively being rained on makes little net drying progress and re-wets. Open-Meteo's
+// ET₀ stays positive on a rainy day (it's radiation-based), so without this a wet day would still count
+// as drying power - shrinking the predicted dry-down and the rain-penalty window. Suppress a day's
+// effective drying by how wet it is.
+function wetMult(d){
+  const amt=d.rain||0, pop=(d.rainProb!=null?d.rainProb:0);
+  if(amt>=4||pop>=80)return 0.15;   // wet most of the day - essentially no field drying
+  if(amt>=1||pop>=55)return 0.45;   // showers / drizzle - partial drying at best
+  if(amt>=0.3||pop>=40)return 0.75; // spotty
+  return 1;
+}
+// Effective drying power for a day (mm of reference ET), discounted for overnight dew and daytime rain.
+function effEt0(d){ return d.et0!=null?d.et0*dewMult(d)*wetMult(d):0; }
 
 // Drying power (mm of reference ET) required to reach baling moisture - crop stem-thickness × product
 // target, reduced when cut with a conditioner (crop-dependent benefit).
@@ -740,9 +751,20 @@ function scoreCut(D){
   if(!pd.enough){longPen=30;tooLong=true;parts.push({label:'Not enough drying power',v:-longPen});}
   else if(pdd>mk.maxDays){longPen=(pdd-mk.maxDays)*7;parts.push({label:'Slow cure',v:-longPen});}
 
-  let score=base-rainPen-dewPen-longPen;
+  // --- you can't lay hay into rain: a wet CUT DAY blocks the go/no-go decision no matter how good the
+  // rest of the window looks (the drying-power base is a whole-window measure and stays high when only
+  // the cut day is wet). Baleage (wilted ~a day, wrapped wet) is far more forgiving. ---
+  const cd=DAYS[D], cdAmt=cd?cd.rain||0:0, cdPop=cd?cd.rainProb||0:0;
+  const cutWet=cdAmt>=3||(cdPop>=70&&cdAmt>=0.6);           // actively / very likely raining the cut day
+  let cutPen=0;
+  if(cutWet)cutPen=mk.wet?18:40;
+  else if(cdAmt>=0.8||cdPop>=50)cutPen=mk.wet?4:10;         // shower risk on the cut day - a dip, not a veto
+  if(cutPen)parts.push({label:'Rain on cut day',v:-cutPen});
+
+  let score=base-rainPen-dewPen-longPen-cutPen;
   if(hardRain)score=Math.min(score,18);
   if(tooLong)score=Math.min(score,26);
+  if(cutWet)score=Math.min(score,mk.wet?42:24);             // don't recommend cutting into active rain
   score=Math.max(0,Math.min(100,score));
 
   // --- forecast confidence from model agreement across the window ---
@@ -756,7 +778,7 @@ function scoreCut(D){
   const confidence=confVal>=0.62?'High':confVal>=0.4?'Medium':'Low';
 
   return {D,score,tier:tierOf(score),pdd,pddEnough:pd.enough,base,rainPen,rainWindow,rainProbMax,
-    dewPen,hardRain,heavyDew,tooLong,worstRain,parts,winEnd,confidence,confVal,modelsSeen,need:pd.need,accMax};
+    dewPen,hardRain,heavyDew,tooLong,cutWet,worstRain,parts,winEnd,confidence,confVal,modelsSeen,need:pd.need,accMax};
 }
 function tierOf(s){
   if(s>=72)return {word:'Prime cut',color:'var(--good)'};
@@ -790,6 +812,11 @@ function kindTail(idx){
 }
 function riskLine(r){
   const mk=MAKING[PRODUCT];
+  if(r.cutWet){
+    const cd=DAYS[r.D];
+    const arr=(cd&&cd.rainArrival!=null)?` (rain from ~${fmtClock(cd.rainArrival)})`:'';
+    return `Rain on your cut day ${dayShort(r.D)}${arr}${kindTail(r.D)} - you'd be laying hay into it. Wait for a dry morning.`;
+  }
   if(r.hardRain&&r.worstRain){
     const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
     return `Heavy rain ${dayShort(w.idx)}${whenPhrase(w)}${m}${kindTail(w.idx)}. Wait.`;
