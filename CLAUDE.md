@@ -98,16 +98,43 @@ the dominant penalty.
 For each candidate cut day D:
 1. **`predictDryDays(D)`** — accumulate daytime effective ET₀ from D until it reaches the product's
    `needMm` (crop `dryFactor` × making `needMm`). Cut day counts as a half drying day. `effEt0` discounts
-   ET₀ for genuinely saturated overnights via `dewMult`. Returns predicted dry-down days (or Infinity =
-   not enough drying power in the horizon).
+   ET₀ for genuinely saturated overnights via `dewMult` **and for daytime rain via `wetMult`** (a day the
+   swath is actively rained on makes little net drying and re-wets — Open-Meteo ET₀ stays positive on
+   rainy days since it's radiation-based, so without this a wet day would falsely count as drying power,
+   shrinking both the dry-down estimate and the rain-penalty window). Returns predicted dry-down days (or
+   Infinity = not enough drying power in the horizon).
 2. **Base** from drying-power surplus/deficit over the ideal window (`60 + 42·surplus`).
 3. **Rain penalty (dominant):** over the curing window, `((amt·2.4)+(prob·6))·conf·qw / rainTol`, where
    `qw` rises across the window (rain on drier hay leaches quality worse) and `conf` discounts penalty
-   when models disagree. A hard-rain day inside the window (≥7 mm with ≥40% model agreement, or ≥12 mm)
-   forces the score to "Don't cut".
-4. **Dew penalty:** small, only for RH ≥97% overnights (dew that lingers, not routine nightly dew).
-5. **Short-window / not-enough-drying-power:** flagged and penalized; Infinity dry-down caps the score.
-6. **Confidence** from model unanimity across the window × horizon decay → High / Medium / Low.
+   when models disagree. `conf` uses `agree = max(per-day rainFrac, windowModelAgree)` — see below. A
+   hard-rain day inside the window forces the score to "Don't cut": ≥7 mm with ≥40% agreement, ≥12 mm,
+   **or ≥3.5 mm the models broadly agree on (`windowModelAgree` ≥0.75)**.
+   - **`windowModelAgree(D, winEnd)`** is the window-level consensus — the *same* rule the Forecast-models
+     panel shows ("N/N see rain"): fraction of models whose **total** rain across the window reaches ≥2 mm.
+     Per-day `rainFrac` only counts models seeing ≥2 mm on a **single** day, so it misses rain that's
+     broadly agreed but spread thin day-to-day (or landing on different days per model). Folding it into
+     `conf` fixed the reported "score says Marginal while the panel says 4/4 see rain" contradiction — the
+     score now can't discount rain the models agree is coming. The helper is deliberately kept identical
+     to `renderModels`' rule so the two never disagree.
+4. **Cut-day quality gate:** "Prime / good to go" must mean a clean START to lay hay down — the
+   whole-window drying base stays high even when only the cut day is compromised, so the cut day gets its
+   own checks independent of the later window:
+   - **`cutWet`** (can't lay hay into rain): ≥3 mm on day D, or ≥70% PoP with ≥0.6 mm → penalty 40 (18
+     for baleage) and score capped to "Don't cut" (Marginal for baleage). A lesser shower risk (≥0.8 mm
+     or ≥50% PoP) is a −10 dip. Fixed the "app said cut on a rainy day" bug (the mm-weighted rain penalty
+     under-counted long low-accumulation rain, and the cut day carried the lowest `qw` = 0.6).
+   - **`cutLingers`** (`dewLingers` on day D — dew never burns off, the swath stays damp all day):
+     `effEt0` now multiplies such a day's drying by 0.45, plus a −12 cut-day penalty, and the score is
+     **capped to 46 (Marginal)** — a dew-locked day is a poor day to cut even if later days are great.
+   - **`cutRainRisk`** (`rainArrival` before 17:00 with ≥0.5 mm or ≥45% PoP — the app itself flags a
+     daytime shower as you'd be cutting): score **capped to 58 (Good)**. A *late-evening* rain flag on an
+     otherwise clear, well-drying day does NOT cap (it dried all day first).
+   All three surface in `riskLine` ("Rain on your cut day…", "Dew won't burn off…", "Showers possible…as
+   you'd be cutting"). Fixed the reported "Prime cut / good to go" on a day the plan itself labeled "Cut
+   (rain risk) · dew lingers all day".
+5. **Dew penalty:** small, only for RH ≥97% overnights (dew that lingers, not routine nightly dew).
+6. **Short-window / not-enough-drying-power:** flagged and penalized; Infinity dry-down caps the score.
+7. **Confidence** from model unanimity across the window × horizon decay → High / Medium / Low.
 
 Tiers: **Prime cut ≥72 / Good ≥52 / Marginal ≥34 / Don't cut** (green/gold/orange/red). `bestCutDay()`
 scans all 14 days for the top score. `riskLine(r)` emits the plain-language callout (e.g. "Heavy rain

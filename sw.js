@@ -1,5 +1,5 @@
 /* HayWatch service worker */
-const CACHE = 'haywatch-v3';
+const CACHE = 'haywatch-v4';
 const SHELL = [
   './',
   './index.html',
