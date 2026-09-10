@@ -116,14 +116,22 @@ For each candidate cut day D:
      `conf` fixed the reported "score says Marginal while the panel says 4/4 see rain" contradiction — the
      score now can't discount rain the models agree is coming. The helper is deliberately kept identical
      to `renderModels`' rule so the two never disagree.
-4. **Cut-day rain gate (`cutWet`):** you can't lay hay into rain, and the whole-window base stays high
-   when *only* the cut day is wet — so a wet **cut day** is a first-order go/no-go blocker independent of
-   the later window. `cutWet` = ≥3 mm on day D, or ≥70% PoP with ≥0.6 mm → penalty 40 (18 for baleage)
-   and the score is capped to "Don't cut" (Marginal for baleage). A lesser shower risk (≥0.8 mm or ≥50%
-   PoP) is a −10 dip, not a veto. Surfaced first in `riskLine` ("Rain on your cut day … you'd be laying
-   hay into it. Wait for a dry morning."). This is the fix for the reported "app said cut on a rainy day"
-   bug — a rainy/drizzly cut day used to score Good because the mm-weighted rain penalty under-counted
-   long-duration low-accumulation rain and the cut day was weighted least (`qw` = 0.6 at position 0).
+4. **Cut-day quality gate:** "Prime / good to go" must mean a clean START to lay hay down — the
+   whole-window drying base stays high even when only the cut day is compromised, so the cut day gets its
+   own checks independent of the later window:
+   - **`cutWet`** (can't lay hay into rain): ≥3 mm on day D, or ≥70% PoP with ≥0.6 mm → penalty 40 (18
+     for baleage) and score capped to "Don't cut" (Marginal for baleage). A lesser shower risk (≥0.8 mm
+     or ≥50% PoP) is a −10 dip. Fixed the "app said cut on a rainy day" bug (the mm-weighted rain penalty
+     under-counted long low-accumulation rain, and the cut day carried the lowest `qw` = 0.6).
+   - **`cutLingers`** (`dewLingers` on day D — dew never burns off, the swath stays damp all day):
+     `effEt0` now multiplies such a day's drying by 0.45, plus a −12 cut-day penalty, and the score is
+     **capped to 46 (Marginal)** — a dew-locked day is a poor day to cut even if later days are great.
+   - **`cutRainRisk`** (`rainArrival` before 17:00 with ≥0.5 mm or ≥45% PoP — the app itself flags a
+     daytime shower as you'd be cutting): score **capped to 58 (Good)**. A *late-evening* rain flag on an
+     otherwise clear, well-drying day does NOT cap (it dried all day first).
+   All three surface in `riskLine` ("Rain on your cut day…", "Dew won't burn off…", "Showers possible…as
+   you'd be cutting"). Fixed the reported "Prime cut / good to go" on a day the plan itself labeled "Cut
+   (rain risk) · dew lingers all day".
 5. **Dew penalty:** small, only for RH ≥97% overnights (dew that lingers, not routine nightly dew).
 6. **Short-window / not-enough-drying-power:** flagged and penalized; Infinity dry-down caps the score.
 7. **Confidence** from model unanimity across the window × horizon decay → High / Medium / Low.

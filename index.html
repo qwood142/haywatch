@@ -686,8 +686,10 @@ function wetMult(d){
   if(amt>=0.3||pop>=40)return 0.75; // spotty
   return 1;
 }
-// Effective drying power for a day (mm of reference ET), discounted for overnight dew and daytime rain.
-function effEt0(d){ return d.et0!=null?d.et0*dewMult(d)*wetMult(d):0; }
+// Effective drying power for a day (mm of reference ET), discounted for overnight dew, daytime rain, and
+// days when the morning dew never burns off (dewLingers = RH never drops to a workable ≤72%, so the
+// swath stays damp and makes little progress no matter what the ET₀ number says).
+function effEt0(d){ return d.et0!=null?d.et0*dewMult(d)*wetMult(d)*(d.dewLingers?0.45:1):0; }
 
 // Drying power (mm of reference ET) required to reach baling moisture - crop stem-thickness × product
 // target, reduced when cut with a conditioner (crop-dependent benefit).
@@ -780,15 +782,25 @@ function scoreCut(D){
   // the cut day is wet). Baleage (wilted ~a day, wrapped wet) is far more forgiving. ---
   const cd=DAYS[D], cdAmt=cd?cd.rain||0:0, cdPop=cd?cd.rainProb||0:0;
   const cutWet=cdAmt>=3||(cdPop>=70&&cdAmt>=0.6);           // actively / very likely raining the cut day
+  // A cut day is a poor START when dew never burns off (the swath won't dry) or when the app itself flags
+  // rain arriving during working hours - "Prime / good to go" must mean a clean start to lay hay down,
+  // no matter how good the later days in the window look.
+  const cutLingers=!!(cd&&cd.dewLingers);
+  const cutRainRisk=!!(cd&&cd.rainArrival!=null&&cd.rainArrival<17*60&&(cdAmt>=0.5||cdPop>=45));
   let cutPen=0;
   if(cutWet)cutPen=mk.wet?18:40;
   else if(cdAmt>=0.8||cdPop>=50)cutPen=mk.wet?4:10;         // shower risk on the cut day - a dip, not a veto
-  if(cutPen)parts.push({label:'Rain on cut day',v:-cutPen});
+  if(cutLingers)cutPen+=mk.wet?4:12;                        // dew never burns off = the drying day is mostly wasted
+  if(cutPen)parts.push({label:'Rain / dew on cut day',v:-cutPen});
 
   let score=base-rainPen-dewPen-longPen-cutPen;
   if(hardRain)score=Math.min(score,18);
   if(tooLong)score=Math.min(score,26);
   if(cutWet)score=Math.min(score,mk.wet?42:24);             // don't recommend cutting into active rain
+  if(!mk.wet){                                              // a compromised cut day can't read "Prime, good to go"
+    if(cutLingers)score=Math.min(score,46);                 // dew-locked start -> Marginal at best
+    else if(cutRainRisk)score=Math.min(score,58);           // daytime shower risk on the cut day -> Good at best
+  }
   score=Math.max(0,Math.min(100,score));
 
   // --- forecast confidence from model agreement across the window ---
@@ -802,7 +814,7 @@ function scoreCut(D){
   const confidence=confVal>=0.62?'High':confVal>=0.4?'Medium':'Low';
 
   return {D,score,tier:tierOf(score),pdd,pddEnough:pd.enough,base,rainPen,rainWindow,rainProbMax,
-    dewPen,hardRain,heavyDew,tooLong,cutWet,worstRain,parts,winEnd,confidence,confVal,modelsSeen,need:pd.need,accMax};
+    dewPen,hardRain,heavyDew,tooLong,cutWet,cutLingers,cutRainRisk,worstRain,parts,winEnd,confidence,confVal,modelsSeen,need:pd.need,accMax};
 }
 function tierOf(s){
   if(s>=72)return {word:'Prime cut',color:'var(--good)'};
@@ -847,6 +859,14 @@ function riskLine(r){
   }
   if(r.tooLong){
     return `Not enough drying power in the next ${DAYS.length} days for ${mk.short}. Consider baleage or wait.`;
+  }
+  if(r.cutLingers){
+    return `Dew won't burn off ${dayShort(r.D)} - the swath stays damp and barely dries. A poor day to lay hay down; wait for one that clears.`;
+  }
+  if(r.cutRainRisk){
+    const cd=DAYS[r.D];
+    const arr=(cd&&cd.rainArrival!=null)?` (~${fmtClock(cd.rainArrival)})`:'';
+    return `Showers possible ${dayShort(r.D)}${arr}${kindTail(r.D)} as you'd be cutting - it dries after, but the start's a gamble.`;
   }
   if(r.rainPen>22&&r.worstRain){
     const w=r.worstRain, m=w.models?` (${modelPhrase(w)})`:'';
