@@ -708,6 +708,19 @@ function predictDryDays(D){
 }
 
 // Full score for cutting on day D. Rain is the dominant penalty and escalates as the hay dries.
+// Fraction of models whose TOTAL rain across the window (D..winEnd) reaches ≥2 mm - the window-level
+// consensus the Forecast-models panel displays. Kept identical to that panel's rule so the score and
+// the "N/N see rain" headline can never tell different stories.
+function windowModelAgree(D,winEnd){
+  if(!MODELDAY)return 0;
+  let wet=0,have=0;
+  MODELS.forEach(m=>{
+    let sum=0,h=0;
+    for(let j=D;j<=winEnd;j++){const md=DAYS[j]&&MODELDAY[DAYS[j].date];if(md&&md.per&&md.per[m.id]!=null){h++;sum+=md.per[m.id];}}
+    if(h){have++;if(sum>=2)wet++;}
+  });
+  return have?wet/have:0;
+}
 function scoreCut(D){
   const mk=MAKING[PRODUCT], pd=predictDryDays(D);
   let pdd=pd.enough?pd.days:MAKING[PRODUCT].maxDays+3;
@@ -721,6 +734,14 @@ function scoreCut(D){
 
   // --- rain penalty over the curing window; later (drier) rain leaches quality worse ---
   const winEnd=Math.min(DAYS.length-1, D+Math.ceil(pd.enough?pd.days:mk.maxDays));
+  // Window-level model agreement - the SAME signal the Forecast-models panel shows ("4/4 see rain"):
+  // the fraction of models whose TOTAL rain across the whole window reaches ≥2 mm. The per-day rainFrac
+  // only counts models seeing ≥2 mm on a SINGLE day, so it misses rain the models broadly agree is
+  // coming but that's spread thin day-to-day (or lands on different days per model). If every model
+  // puts rain somewhere in your multi-day window, the hay gets wet - which exact day matters less than
+  // the fact that you can't have it on the ground that long and dodge it. Use this so the score can't
+  // read "Marginal" while the panel shouts "all models agree it's wet".
+  const winAgree=windowModelAgree(D,winEnd);
   let rainPen=0,hardRain=false,rainWindow=0,rainProbMax=0,worstRain=null;
   for(let j=D;j<=winEnd;j++){
     const dd=DAYS[j]; if(!dd)continue;
@@ -728,14 +749,17 @@ function scoreCut(D){
     const pos=(j-D)/span;                          // 0 at cut → 1 near bale
     const qw=0.6+0.9*pos;                          // quality weight: rain on drier hay hurts more
     const amt=dd.rain||0, prob=(dd.rainProb!=null?dd.rainProb:0)/100;
-    const agree=dd.rainFrac!=null?dd.rainFrac:prob; // model consensus on rain, else fall back to prob
+    let agree=dd.rainFrac!=null?dd.rainFrac:prob;   // model consensus on rain, else fall back to prob
+    agree=Math.max(agree,winAgree);                 // don't discount rain the models broadly agree is coming
     const conf=0.5+0.5*agree;                       // discount penalty when models disagree
     rainWindow+=amt; rainProbMax=Math.max(rainProbMax,dd.rainProb||0);
     if(amt>0.3||prob>0.35){
       const pen=((amt*2.4)+(prob*6)) * conf * qw / mk.rainTol;
       rainPen+=pen;
-      if((amt>=7&&agree>=0.4)||(amt>=12))hardRain=true;
-      if(!worstRain||amt>worstRain.amt)worstRain={idx:j,amt,prob:dd.rainProb,agree:dd.rainFrac,models:dd.rainCount,arrival:dd.rainArrival};
+      // hard "Don't cut": a heavy soak, OR a real wetting the models broadly agree on (spread-thin rain
+      // that all models see coming still soaks hay left on the ground for days).
+      if((amt>=7&&agree>=0.4)||amt>=12||(amt>=3.5&&winAgree>=0.75))hardRain=true;
+      if(!worstRain||amt>worstRain.amt)worstRain={idx:j,amt,prob:dd.rainProb,agree,models:dd.rainCount,arrival:dd.rainArrival};
     }
   }
   parts.push({label:'Rain in window',v:-rainPen});

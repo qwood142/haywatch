@@ -106,8 +106,16 @@ For each candidate cut day D:
 2. **Base** from drying-power surplus/deficit over the ideal window (`60 + 42·surplus`).
 3. **Rain penalty (dominant):** over the curing window, `((amt·2.4)+(prob·6))·conf·qw / rainTol`, where
    `qw` rises across the window (rain on drier hay leaches quality worse) and `conf` discounts penalty
-   when models disagree. A hard-rain day inside the window (≥7 mm with ≥40% model agreement, or ≥12 mm)
-   forces the score to "Don't cut".
+   when models disagree. `conf` uses `agree = max(per-day rainFrac, windowModelAgree)` — see below. A
+   hard-rain day inside the window forces the score to "Don't cut": ≥7 mm with ≥40% agreement, ≥12 mm,
+   **or ≥3.5 mm the models broadly agree on (`windowModelAgree` ≥0.75)**.
+   - **`windowModelAgree(D, winEnd)`** is the window-level consensus — the *same* rule the Forecast-models
+     panel shows ("N/N see rain"): fraction of models whose **total** rain across the window reaches ≥2 mm.
+     Per-day `rainFrac` only counts models seeing ≥2 mm on a **single** day, so it misses rain that's
+     broadly agreed but spread thin day-to-day (or landing on different days per model). Folding it into
+     `conf` fixed the reported "score says Marginal while the panel says 4/4 see rain" contradiction — the
+     score now can't discount rain the models agree is coming. The helper is deliberately kept identical
+     to `renderModels`' rule so the two never disagree.
 4. **Cut-day rain gate (`cutWet`):** you can't lay hay into rain, and the whole-window base stays high
    when *only* the cut day is wet — so a wet **cut day** is a first-order go/no-go blocker independent of
    the later window. `cutWet` = ≥3 mm on day D, or ≥70% PoP with ≥0.6 mm → penalty 40 (18 for baleage)
